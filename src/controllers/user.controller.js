@@ -43,7 +43,7 @@ export const authenticateUser=async (email,password)=>{
         user=user[0];
         
 
-        if(!await iscorrectPassword(password,user.password)){
+        if(!await user.isCorrectPassword(password)){
             throw "Incorrect Password";
         }
 
@@ -55,7 +55,7 @@ export const authenticateUser=async (email,password)=>{
 
         console.log(error);
         
-        return ApiResponse(400,error);
+        return new ApiResponse(400,error);
         
         
     }
@@ -81,13 +81,6 @@ export const isEmailExistsInDB = async (email)=>{
 
 
 
-
-const iscorrectPassword =  async (password,hashedpass)=>{
- 
-    const match = await bcrypt.compare(password,hashedpass);
-     
-    return match;
-}
 
  const getHashedPassword= async (password)=>{
     const hashedPass = await bcrypt.hash(password,12);
