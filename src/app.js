@@ -1,6 +1,7 @@
 import express, { urlencoded } from  'express';
 import cors from 'cors';
 import userrouter from './routes/user.routes.js';
+import cookieParser from 'cookie-parser';
 import env from 'dotenv'
 import { globalErrorHandler } from './middlewares/errorHandlar.middleware.mjs';
 env.config();
@@ -10,6 +11,8 @@ const app = express();
 app.use(express.json());
 app.use(urlencoded({extended:true}));
 app.use(cors({origin:process.env.ORIGIN_URI}));
+app.use(express.static('public'));
+app.use(cookieParser());
 
 app.get("/",(req,res)=>{
     res.send("true");

@@ -2,7 +2,7 @@ import { UserModel } from "../models/User.model.js";
 import bcrypt from "bcrypt";
 import jsonwebtoken from "jsonwebtoken";
 import util from "util";
-import { Message } from "../entities/response.entity.js";
+import { ApiResponse } from "../utils/apiResponse.js";
 import env from 'dotenv'
 env.config();
 
@@ -16,7 +16,7 @@ export const registerUser = async (name,email,password,role,phone)=>{
         const registereduser = await user.save();
         console.log("success saving ");
        
-        return new Message("User Succesfully registered",registereduser,true);
+        return new ApiResponse(200,"User Succesfully registered",registereduser,true);
         
     } catch (error) {
         let err;
@@ -27,7 +27,7 @@ export const registerUser = async (name,email,password,role,phone)=>{
             
             err = "some internal error occured";
         }
-        return new Message(err);
+        return new ApiResponse(400,err);
     }
 
 }
@@ -35,7 +35,7 @@ export const registerUser = async (name,email,password,role,phone)=>{
 
 
 export const authenticateUser=async (email,password)=>{
-const msg = new Message(null,"",false);
+
     try {
 
 
@@ -49,16 +49,13 @@ const msg = new Message(null,"",false);
 
         const token = await getJWT(user);
 
-        msg.res={token};
-        msg.msg="login Successful";
-        msg.success=true;
-        return msg;
+        return new ApiResponse(200,"login Successful",{token},true);
         
     } catch (error) {
 
         console.log(error);
-        msg.msg=error;
-        return msg;
+        
+        return ApiResponse(400,error);
         
         
     }
