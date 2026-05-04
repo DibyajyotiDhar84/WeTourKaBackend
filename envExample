@@ -1,0 +1,4 @@
+PORT=8000
+MONGO_URI="Your Mongo url"
+ORIGIN_URI=http://localhost:4200
+SECRECT_KEY = 'your SECRECT_KEY'

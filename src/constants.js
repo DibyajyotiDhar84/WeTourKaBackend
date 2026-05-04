@@ -1,0 +1,3 @@
+export const DB_NAME = "WeTourDB";
+export const ROLES = ['ADMIN','TRAVELLER','HOTEL_MANAGER',"PACKAGE_MANAGER"];
+export const ROLES_noADMIN=['TRAVELLER','HOTEL_MANAGER',"PACKAGE_MANAGER"];
