@@ -1,11 +1,19 @@
+import { validationResult } from "express-validator";
 import { authenticateUser, isEmailExistsInDB, registerUser } from "../services/user.service.js";
+import ApiError from "../utils/apiError.js";
 
 export const register = async (req,res)=>{
-
-    const {name,email,password,role,phone}=req.body;
-    const user = await registerUser(name,email,password,role,phone);
-    res.status(user.statusCode).json(user)
     
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        res.status(400).json(
+            new ApiError(400,"registration error",errors.array())
+        );
+    }else{
+        const {name,email,password,role,phone}=req.body;
+        const user = await registerUser(name,email,password,role,phone);
+        res.status(user.statusCode).json(user)
+    }
 }
 
 

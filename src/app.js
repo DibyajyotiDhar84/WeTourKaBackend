@@ -1,6 +1,7 @@
 import express, { urlencoded } from  'express';
 import cors from 'cors';
 import userrouter from './routes/user.routes.js';
+import adminRouter from './routes/admin.routes.js';
 import cookieParser from 'cookie-parser';
 import env from 'dotenv'
 import { globalErrorHandler } from './middlewares/errorHandlar.middleware.mjs';
@@ -20,6 +21,8 @@ app.get("/",(req,res)=>{
 
 //routers--->>>>
 app.use("/user",userrouter);
+
+app.use("/admin",adminRouter);
 
 
 //test of globalErrorHandler--->>>

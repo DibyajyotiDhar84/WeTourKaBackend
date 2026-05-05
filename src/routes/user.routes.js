@@ -5,7 +5,7 @@ import {validate} from '../middlewares/validate.mjs';
 
 const router = express.Router();
 
-router.post("/register",validateRegiter,validate, register);
+router.post("/register",validateRegiter, register);
 
 router.post('/auth',authenticate);
 

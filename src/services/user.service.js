@@ -74,7 +74,6 @@ export const isEmailExistsInDB = async (email)=>{
 
 
 
-
  const getHashedPassword= async (password)=>{
     const hashedPass = await bcrypt.hash(password,12);
     return hashedPass;
