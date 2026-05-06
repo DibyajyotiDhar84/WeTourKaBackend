@@ -14,9 +14,10 @@ export const registerUser = async (name,email,password,role,phone)=>{
         const hashedPass=await getHashedPassword(password);
         const user = new UserModel({name,email,password:hashedPass,role,phone});
         const registereduser = await user.save();
+        const userTores= await UserModel.findById(registereduser._id).select("-password");
         console.log("success saving ");
        
-        return new ApiResponse(200,"User Succesfully registered",registereduser,true);
+        return new ApiResponse(200,"User Succesfully registered",userTores,true);
         
     } catch (error) {
         let err;
@@ -70,7 +71,6 @@ export const isEmailExistsInDB = async (email)=>{
 
    }
 }
-
 
 
 

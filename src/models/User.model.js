@@ -29,7 +29,7 @@ const userSchema = new Schema({
         required:true,
     }
 
-});
+},{timestamps:true});
 
 userSchema.methods.isCorrectPassword = async function (password) {
     return await bcrypt.compare(password,this.password);  
