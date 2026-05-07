@@ -14,8 +14,8 @@ export const verifyAdmin= asyncHandler(async(req,res,next)=>{
     if(!authHeader || !authHeader.startsWith("Bearer ")){
         throw new ApiError(401,"Access token required")
     }
-    const token =authHeader.split(" ")[1];
-    const payload = await verifyToken(token,process.env.SECRECT_KEY);
+    const token =authHeader.split(" ")[1];    
+    const payload = await verifyToken(token,process.env.SECRECT_KEY);    
     if(payload.user.role!=='ADMIN'){
         throw new ApiError(403,"Admin access requird");
     }

@@ -2,10 +2,6 @@ import  { Schema, model } from "mongoose";
 import bcrypt from 'bcrypt';
 
 const userSchema = new Schema({
-    // uid:{
-    //     type:Schema.Types.ObjectId,
-    //     unique:true
-    // },
     email:{
         type:String,
         required:true,

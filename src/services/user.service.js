@@ -89,6 +89,6 @@ export const isEmailExistsInDB = async (email)=>{
         S_Id:sessionId
     }
     
-    const token = await signJWT(payLoad,process.env.SECRECT_KEY,{ expiresIn: '10m'});
+    const token = await signJWT(payLoad,process.env.SECRECT_KEY,{ expiresIn: '20m'});
     return token;
  }

@@ -5,8 +5,15 @@ export const asyncHandler=(requestHandler)=>async(req,res,next)=>{
         await requestHandler(req,res,next);
         
     }catch (error) {
-    const statusCode = error instanceof ApiError ? error.statusCode : 500;
-
+    let statusCode = error instanceof ApiError ? error.statusCode : 500;
+    // console.log(error.match("TokenExpiredError"));
+    
+    if(error.toString().match("TokenExpiredError")){
+      statusCode=401;
+      error.message="Jwt Expired";
+    }
+    console.log(error);
+   
     res.status(statusCode).json({
       success: false,
       message: error.message || 'Internal Server Error',

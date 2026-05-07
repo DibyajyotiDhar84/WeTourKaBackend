@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { verifyAdmin } from "../middlewares/checkRole.middleware.js";
-import { getAllUsers } from "../controllers/admin.controller.js";
+import { addFlight, getAllUsers } from "../controllers/admin.controller.js";
 
 const router = new Router();
 
-router.get('/allUsers',verifyAdmin,getAllUsers)
+router.get('/allUsers',getAllUsers);
+router.post('/addFlight',addFlight);
 
 
 

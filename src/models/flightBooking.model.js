@@ -1,0 +1,24 @@
+import { model, Schema} from 'mongoose'
+
+const flightBookingSchema = new Schema({
+    user_id: { type: Schema.Types.ObjectId, ref: "users", required: true },
+    flight_id: { type: Schema.Types.ObjectId, ref: "flights", required: true },
+    pnr_number: { type: String, unique: true },
+    
+    // Array of References to Passenger documents
+    passengers: [{ type: Schema.Types.ObjectId, ref: "passengers" }],
+    
+    total_price: Number,
+    booking_status: { type: String, enum: ["Confirmed", "Cancelled"], default: "Confirmed" },
+    booked_at: { type: Date, default: Date.now }
+
+});
+
+bookingSchema.pre('save', function(next) {
+    if (!this.pnr_number) {
+        this.pnr_number = Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+    next();
+});
+
+export const flightBookingModel = model("flightBookings",flightBookingSchema);

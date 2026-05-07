@@ -5,6 +5,8 @@ import adminRouter from './routes/admin.routes.js';
 import cookieParser from 'cookie-parser';
 import env from 'dotenv'
 import { globalErrorHandler } from './middlewares/errorHandlar.middleware.mjs';
+import {verifyAdmin} from './middlewares/checkRole.middleware.js'
+
 env.config();
 
 const app = express();
@@ -22,7 +24,7 @@ app.get("/",(req,res)=>{
 //routers--->>>>
 app.use("/user",userrouter);
 
-app.use("/admin",adminRouter);
+app.use("/admin",verifyAdmin,adminRouter);
 
 
 //test of globalErrorHandler--->>>
