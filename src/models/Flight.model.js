@@ -23,7 +23,8 @@ const flightSchema = new Schema({
     status: {
         type: String,
         enum: ["Scheduled", "Delayed", "Cancelled", "Completed"],
-        default: "Scheduled"
+        default: "Scheduled",
+        index:true,
     },
     aircraft: {
         model: String,
@@ -70,7 +71,6 @@ flightSchema.methods.bookSeat = async function (seatNumber) {
     if(!seat.is_available)throw new ApiError(400,"Seat is already booked");
 
     seat.is_available=false;
-    return await this.save();
     
 };
 

@@ -22,7 +22,7 @@ export const addFlight =asyncHandler(async(req,res)=>{
 
     const {
         flight_number, airline, origin, destination,
-        departure_time, arrival_time, aircraft, crew
+        departure_time, arrival_time, aircraft,status, crew
     } = req.body;
 
     const existingFlight = await flightModel.findOne({flight_number,departure_time});
@@ -59,6 +59,7 @@ export const addFlight =asyncHandler(async(req,res)=>{
             departure_time,
             arrival_time,
             aircraft,
+            status,
             seats,
             crew
         });
@@ -68,3 +69,28 @@ export const addFlight =asyncHandler(async(req,res)=>{
         );
 
 });
+
+export const allFlights=asyncHandler(async(req,res)=>{
+    const fl= await flightModel.find();
+    if(!fl){
+        throw new ApiError(404,"No flights");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,"All flights fetch successfully",fl,true)
+    )
+
+});
+
+export const allRunningFlights= asyncHandler(async(req,res)=>{
+    const allFlights = await flightModel.find({status:{$ne:"Cancelled"}});
+    if(!allFlights){
+        throw new ApiError(404,"No running flights");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,"all running flights fetch sucessfully",allFlights,true)
+    )
+
+});
+

@@ -14,11 +14,10 @@ const flightBookingSchema = new Schema({
 
 });
 
-bookingSchema.pre('save', function(next) {
+flightBookingSchema.pre('save', function() {
     if (!this.pnr_number) {
         this.pnr_number = Math.random().toString(36).substring(2, 8).toUpperCase();
     }
-    next();
 });
 
 export const flightBookingModel = model("flightBookings",flightBookingSchema);
