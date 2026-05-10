@@ -22,3 +22,45 @@ export const verifyAdmin= asyncHandler(async(req,res,next)=>{
     req.user=payload;
     next();
 });
+
+export const verifyTraveller= asyncHandler(async(req,res,next)=>{
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || !authHeader.startsWith('Bearer')){
+        throw new ApiError(401,"Access token required");
+    }
+    const token = authHeader.split(" ")[1];
+    const payload = await verifyToken(token,process.env.SECRECT_KEY);
+    if(payload.user.role!=='TRAVELLER'){
+        throw new ApiError(403,"Traveller access required");
+    }
+    req.user=payload;
+    next();
+});
+
+export const verifyHotelManager= asyncHandler(async(req,res,next)=>{
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || !authHeader.startsWith('Bearer')){
+        throw new ApiError(401,"Access token required");
+    }
+    const token = authHeader.split(" ")[1];
+    const payload = await verifyToken(token,process.env.SECRECT_KEY);
+    if(payload.user.role!=='HOTEL_MANAGER'){
+        throw new ApiError(403,"HOTEL_MANAGER access required");
+    }
+    req.user=payload;
+    next();
+});
+
+export const verifyPackageManager= asyncHandler(async(req,res,next)=>{
+    const authHeader = req.headers['authorization'];
+    if(!authHeader || !authHeader.startsWith('Bearer')){
+        throw new ApiError(401,"Access token required");
+    }
+    const token = authHeader.split(" ")[1];
+    const payload = await verifyToken(token,process.env.SECRECT_KEY);
+    if(payload.user.role!=='PACKAGE_MANAGER'){
+        throw new ApiError(403,"PACKAGE_MANAGER access required");
+    }
+    req.user=payload;
+    next();
+});
