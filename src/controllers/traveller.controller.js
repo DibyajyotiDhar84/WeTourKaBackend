@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import { passengerModel } from "../models/passenger.model.js";
 import { flightBookingModel } from "../models/flightBooking.model.js";
 import { UserModel } from "../models/User.model.js";
+import { flightInstanceModel } from "../models/flightInstance.model.js";
 
 
 //Travellers flights controller--------->>>>>>>>>>>>>>
@@ -19,7 +20,8 @@ export const bookFlight = asyncHandler(async(req,res)=>{
     
 
     try{
-        const {user_Id, flight_Id, passengers, airline_Prefix, total_Price}=req.body;
+        const {user_Id, template_Id, date,passengers, total_Price}=req.body;
+        const searchDate = new Date(date);
         const user=await UserModel.findById(user_Id).session(session);
         
         if(!user || user.role!=='TRAVELLER'){
@@ -30,34 +32,50 @@ export const bookFlight = asyncHandler(async(req,res)=>{
             throw new ApiError(404,"inflitration in booking flight");
         }
         
-        const flight = await flightModel.findById(flight_Id).session(session);
+        const flight = await flightModel.findById(template_Id).session(session);
         if(!flight){
-            throw new ApiError(404,"flight with given flightId not exists");
-        }
-        const availableSeats = flight.getAvailableSeatCount();
-        if(availableSeats<passengers.length){
-            throw new ApiError(400,"Not enough seats available");
+            throw new ApiError(404,"flight with given template_Id not exists");
         }
 
-        const passengersDoc=[];
-        for(let passenger of passengers){
-            const p =new passengerModel(passenger);
-            await p.generateTicketNumber(airline_Prefix);
-            passengersDoc.push(p);
-        }
+        let instance = await flightInstanceModel.findOne({
+            template_id: template_Id, 
+            date: searchDate
+        }).session(session);
 
-        const savedPassengers=await passengerModel.insertMany(passengersDoc,{session});
-        const passengerIds=savedPassengers.map(p=>p._id);
+        if(!instance){
+            instance= new flightInstanceModel({
+                template_id:template_Id,
+                date:date,
+                booked_seats:[],
+                current_price:flight.base_price
+            });
+        }
 
         const selectedSeats = passengers.map(p=>p.seat);
         for(let seat of selectedSeats){
-            await flight.bookSeat(seat);
+            if(instance.booked_seats.includes(seat)){
+                throw new ApiError(400,`Seat ${seat} is already booked`);
+            }
         }
-        await flight.save({session});
+
+        if((flight.aircraft.capacity - instance.booked_seats.length)<passengers.length){
+            throw new ApiError(400,"Not enough seats available");
+        }
+
+        const passengerDoc = passengers.map(p=>{
+            const pp = new passengerModel(p);
+            pp.generateTicketNumber(flight.airline.iata_code);
+            return pp;
+        });
+        const savedPassengers = await passengerModel.insertMany(passengerDoc,{session});
+        const passengerIds = savedPassengers.map(p=> p._id);
+
+        instance.booked_seats.push(...selectedSeats);
+        await instance.save({session});
 
         const bookedFlight= await flightBookingModel.create([{
             user_id:user_Id,
-            flight_id:flight_Id,
+            instance_id:instance._id,
             passengers:passengerIds,
             total_Price
         }],{session});
@@ -69,7 +87,7 @@ export const bookFlight = asyncHandler(async(req,res)=>{
 
     }catch(error){
         await session.abortTransaction();
-        throw new ApiError(400,"something went wrong in booking flight",error.message);
+        throw new ApiError(400,"Booking failed",error.message);
 
     }finally{
         session.endSession();

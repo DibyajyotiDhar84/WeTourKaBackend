@@ -21,9 +21,15 @@ export const getAllUsers= asyncHandler(async(req,res)=>{
 export const addFlight =asyncHandler(async(req,res)=>{
 
     const {
-        flight_number, airline, origin, destination,
-        departure_time, arrival_time, aircraft,status, crew
-    } = req.body;
+            flight_number, airline, origin, destination,departure_time,
+            arrival_time, aircraft, days_of_week, base_price
+        } = req.body;
+
+
+    if([flight_number,departure_time,arrival_time].some((f)=>f.trim()=="") || !base_price ||!origin ||!destination){
+        throw new ApiError(400,"provide required fields");
+    }
+    
 
     const existingFlight = await flightModel.findOne({flight_number,departure_time});
     if(existingFlight){
@@ -44,7 +50,7 @@ export const addFlight =asyncHandler(async(req,res)=>{
                     seats.push({
                         seat_number: `${i}${letter}`,
                         class: seatClass,
-                        is_available: true
+            
                     });
                 }
             }
@@ -59,9 +65,9 @@ export const addFlight =asyncHandler(async(req,res)=>{
             departure_time,
             arrival_time,
             aircraft,
-            status,
+            days_of_week: days_of_week || [0, 1, 2, 3, 4, 5, 6],
             seats,
-            crew
+            base_price
         });
 
         return res.status(201).json(
@@ -82,15 +88,15 @@ export const allFlights=asyncHandler(async(req,res)=>{
 
 });
 
-export const allRunningFlights= asyncHandler(async(req,res)=>{
-    const allFlights = await flightModel.find({status:{$ne:"Cancelled"}});
-    if(!allFlights){
-        throw new ApiError(404,"No running flights");
-    }
+// export const allRunningFlights= asyncHandler(async(req,res)=>{
+//     const allFlights = await flightModel.find({status:{$ne:"Cancelled"}});
+//     if(!allFlights){
+//         throw new ApiError(404,"No running flights");
+//     }
 
-    res.status(200).json(
-        new ApiResponse(200,"all running flights fetch sucessfully",allFlights,true)
-    )
+//     res.status(200).json(
+//         new ApiResponse(200,"all running flights fetch sucessfully",allFlights,true)
+//     )
 
-});
+// });
 

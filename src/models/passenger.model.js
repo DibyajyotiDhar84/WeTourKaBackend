@@ -3,7 +3,7 @@ import {model,Schema} from 'mongoose';
 const passengerSchema = new Schema({
     name: { type: String, required: true },
     ticket_number: { type: String, unique: true }, // Format: "176 1234567890"
-    seat: String,
+    seat: { type: String, required: true },
     class: { type: String, enum: ["Economy", "Business", "First"], required: true },
     passport_number: String,
     age: Number

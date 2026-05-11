@@ -2,7 +2,7 @@ import { model, Schema} from 'mongoose'
 
 const flightBookingSchema = new Schema({
     user_id: { type: Schema.Types.ObjectId, ref: "users", required: true },
-    flight_id: { type: Schema.Types.ObjectId, ref: "flights", required: true },
+    instance_id: { type: Schema.Types.ObjectId, ref: "FlightInstance", required: true },
     pnr_number: { type: String, unique: true },
     
     // Array of References to Passenger documents
