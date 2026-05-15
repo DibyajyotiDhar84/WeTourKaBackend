@@ -3,10 +3,11 @@ import cors from 'cors';
 import userrouter from './routes/user.routes.js';
 import adminRouter from './routes/admin.routes.js';
 import travellerRouter from './routes/traveller.routes.js';
+import packageManagerRouter from './routes/packageManager.route.js';
 import cookieParser from 'cookie-parser';
 import env from 'dotenv'
 import { globalErrorHandler } from './middlewares/errorHandlar.middleware.mjs';
-import {verifyAdmin, verifyTraveller} from './middlewares/checkRole.middleware.js'
+import {verifyAdmin, verifyPackageManager, verifyTraveller} from './middlewares/checkRole.middleware.js'
 
 env.config();
 
@@ -26,7 +27,10 @@ app.get("/",(req,res)=>{
 app.use("/user",userrouter);
 
 app.use("/admin",verifyAdmin,adminRouter);
+
 app.use("/traveller",verifyTraveller,travellerRouter);
+
+app.use("/package",verifyPackageManager, packageManagerRouter);
 
 
 //test of globalErrorHandler--->>>

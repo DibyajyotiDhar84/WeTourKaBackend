@@ -5,6 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { flightModel } from "../models/Flight.model.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { flightInstanceModel } from "../models/flightInstance.model.js";
+import {Package} from '../models/package.model.js'
 
 
 //user's auth controller----------->>>>>>>>
@@ -25,6 +26,7 @@ export const register = async (req,res)=>{
 
 export const authenticate = async (req,res)=>{
     const {email,password}=req.body;
+    console.log(email, password);
     const user = await authenticateUser(email,password);
     res.status(user.statusCode).json(user)
 }
@@ -91,3 +93,22 @@ export const searchOrigin= asyncHandler(async(req,res)=>{
         new ApiResponse(200,"fetch successfully",searchFlight,true)
     )
 });
+
+//package controller
+export const searchPackages = asyncHandler(async (req, res) => {
+    const { destination, start_date } = req.query;
+    let query = { status: 'Active' };
+
+    if (destination) {
+      query.destination = { $regex: destination, $options: 'i' };
+    }
+
+    if (start_date) {
+      query.start_date = { $gte: new Date(start_date) };
+    }
+
+    const results = await Package.find(query);
+    console.log(results);
+    res.status(200).json(
+        new ApiResponse(200, "Package Found!", results, true));
+  }) ;
