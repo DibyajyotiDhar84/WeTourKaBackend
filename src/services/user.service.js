@@ -38,12 +38,12 @@ export const authenticateUser=async (email,password)=>{
     try {
         let user = await UserModel.find({email});
         user=user[0];  
-
+        console.log(user);
         if(!await user.isCorrectPassword(password)){
             throw "Incorrect Password";
         }
         const token = await getJWT(user);
-
+        console.log("ccdwde");
         return new ApiResponse(200,"login Successful",{token},true);
         
     } catch (error) {
@@ -87,7 +87,7 @@ export const isEmailExistsInDB = async (email)=>{
     const payLoad = {
         user:{user_id:user._id,email:user.email,name:user.name,role:user.role,phone:user.phone},
         S_Id:sessionId
-    }
+    }; 
     
     const token = await signJWT(payLoad,process.env.SECRECT_KEY,{ expiresIn: '20m'});
     return token;
