@@ -7,7 +7,9 @@ import { passengerModel } from "../models/passenger.model.js";
 import { flightBookingModel } from "../models/flightBooking.model.js";
 import { UserModel } from "../models/User.model.js";
 import { flightInstanceModel } from "../models/flightInstance.model.js";
-
+import { Package } from "../models/package.model.js";
+import { Traveller } from "../models/travellers.model.js";
+import { Booking } from "../models/package.booking.model.js";
 
 //Travellers flights controller--------->>>>>>>>>>>>>>
 
@@ -128,5 +130,48 @@ export const bookFlight = asyncHandler(async(req,res)=>{
         session.endSession();
     }
 
+
+});
+
+//package booking
+export const bookPackage = asyncHandler(async (req, res) => {
+    const loggedinUserID=req.user.user.user_id;
+
+    const { package_id, travellers, user_id } = req.body;
+
+    if(loggedinUserID !== user_id){
+        throw new ApiError(400,"tampering done in token");
+    }
+
+    const pkg = await Package.findById(package_id);
+    if (!pkg) throw new ApiError(404,"Package not found");
+
+    if (!travellers || travellers.length === 0) {
+      //return res.status(400).json({ message: "Traveller details are required" });
+      throw new ApiError(400,"Traveller details are required");
+    }
+
+    if (pkg.max_capacity < travellers.length) {
+      //return res.status(400).json({ message: "Not enough slots available" });
+      throw ApiError(400, "Not enough slots available");
+    }
+
+    const createdTravellers = await Traveller.insertMany(travellers);
+    const travellerIds = createdTravellers.map(t => t._id);
+
+    const newBooking = new Booking({
+      user_id: user_id || req.user?._id, 
+      package_id,
+      travellers: travellerIds, // Array of the newly generated IDs
+      booking_status: 'Confirmed' 
+    });
+
+     await newBooking.save();
+     const savedBooking = await Booking.findOne(newBooking._id).populate("package_id")
+                                                                .populate("travellers").lean();
+    
+    res.status(201).json(
+        new ApiResponse(201,"Booking successfull", {booking: savedBooking},true)
+    );
 
 });
