@@ -12,6 +12,7 @@ import { flightInstanceModel } from "../models/flightInstance.model.js";
 //Travellers flights controller--------->>>>>>>>>>>>>>
 
 export const findFlightFromID = asyncHandler(async(req,res)=>{
+    
     const {flightId,fDate} = req.query;
     if(!flightId){
         throw new ApiError(400,"provide flightID");
@@ -43,7 +44,6 @@ export const findFlightFromID = asyncHandler(async(req,res)=>{
 
 export const bookFlight = asyncHandler(async(req,res)=>{
 
-    console.log(" inside book flight");
     const loggedinEmail=req.user.user.email;
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -51,7 +51,8 @@ export const bookFlight = asyncHandler(async(req,res)=>{
 
     try{
         const {user_Id, template_Id, date,passengers, total_Price}=req.body;
-        const searchDate = new Date(date);
+        const searchDate = new Date(date);        
+        
         const user=await UserModel.findById(user_Id).session(session);
         
         if(!user || user.role!=='TRAVELLER'){
@@ -110,9 +111,13 @@ export const bookFlight = asyncHandler(async(req,res)=>{
             total_Price
         }],{session});
 
+        const bookedRes = await flightBookingModel.findOne(bookFlight._id).populate("instance_id")
+                                                                          .populate("passengers")
+                                                                          .lean();
+
         await session.commitTransaction();
         res.status(200).json(
-            new ApiResponse(200,"flight booked successfully",bookedFlight,true)
+            new ApiResponse(200,"flight booked successfully",bookedRes,true)
         )
 
     }catch(error){

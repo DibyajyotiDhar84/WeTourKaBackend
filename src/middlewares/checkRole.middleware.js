@@ -25,6 +25,7 @@ export const verifyAdmin= asyncHandler(async(req,res,next)=>{
 
 export const verifyTraveller= asyncHandler(async(req,res,next)=>{
     const authHeader = req.headers['authorization'];
+        
     if(!authHeader || !authHeader.startsWith('Bearer')){
         throw new ApiError(401,"Access token required");
     }
