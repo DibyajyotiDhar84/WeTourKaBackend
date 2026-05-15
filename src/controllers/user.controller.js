@@ -47,7 +47,7 @@ export const searchFlights = asyncHandler(async(req,res)=>{
     const searchDate = new Date(date);
     const dayOfWeek = searchDate.getUTCDay();
 
-    const flights = await flightModel.find({"origin.city":origin,"destination.city":destination,days_of_week: dayOfWeek});
+    const flights = await flightModel.find({"origin.airport_code":origin,"destination.airport_code":destination,days_of_week: dayOfWeek});
     if(!flights){
         throw new ApiError(400,"Flight not found from searched origin to destination on the particular date");
     }
@@ -73,16 +73,19 @@ export const searchFlights = asyncHandler(async(req,res)=>{
 });
 
 export const searchOrigin= asyncHandler(async(req,res)=>{
-    const Origin =req.params.origin;
+    const searchWord =req.params.searchWord;
 
-    if(!Origin){
+    if(!searchWord){
         throw new ApiError(400,"provide origin to fetch");
     }
     const searchFlight = await flightModel.find({
-        $text:{
-            $search: Origin,
-        }
-    }).select("origin.airport_code destination.airport_code").limit(10);
+        $or: [
+            { 'origin.airport_code': { $regex: searchWord, $options: 'i' } },
+            { 'destination.airport_code': { $regex: searchWord, $options: 'i' } },
+            { 'origin.city': { $regex: searchWord, $options: 'i' } },
+            { 'destination.city': { $regex: searchWord, $options: 'i' } }
+        ]
+    }).select("origin.airport_code destination.airport_code origin.city destination.city -_id").limit(10);
 
     res.status(200).json(
         new ApiResponse(200,"fetch successfully",searchFlight,true)

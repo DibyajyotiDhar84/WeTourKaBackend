@@ -11,7 +11,7 @@ router.post('/auth',authenticate);
 router.get('/validateEmail/:email',isEmailExists);
 
 router.get('/searchFlight',searchFlights);
-router.get('/searchOrigin/:origin',searchOrigin);
+router.get('/searchOrigin/:searchWord',searchOrigin);
 
 
 

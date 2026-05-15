@@ -50,7 +50,7 @@ export const authenticateUser=async (email,password)=>{
 
         console.log(error);
         
-        return new ApiResponse(400,error);   
+        return new ApiResponse(400,error.message||error);   
         
     }
 
@@ -85,7 +85,7 @@ export const isEmailExistsInDB = async (email)=>{
 
     const sessionId = await bcrypt.hash((Date.now().toString() + Math.random().toString()).toString(),12);
     const payLoad = {
-        user:{email:user.email,name:user.name,role:user.role,phone:user.phone},
+        user:{user_id:user._id,email:user.email,name:user.name,role:user.role,phone:user.phone},
         S_Id:sessionId
     }
     

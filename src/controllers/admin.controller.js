@@ -6,7 +6,7 @@ import {asyncHandler} from '../utils/asyncHandler.js';
 
 export const getAllUsers= asyncHandler(async(req,res)=>{
 
-    const users = await UserModel.find().select("-password");
+    const users = await UserModel.find({role:{$ne:"ADMIN"}}).select("-password");
     if(!users)throw new ApiError(404,"could not find users");
     
 

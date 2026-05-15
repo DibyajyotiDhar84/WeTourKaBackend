@@ -2,10 +2,12 @@ import { Router } from "express";
 import { addFlight, allFlights, getAllUsers } from "../controllers/admin.controller.js";
 
 const router = new Router();
+router.route("/users")
+        .get(getAllUsers)
 
-router.get('/allUsers',getAllUsers);
-router.post('/addFlight',addFlight);
-router.get('/allFlights',allFlights);
+router.route('/flight')
+        .post(addFlight)
+        .get(allFlights)
 
 
 

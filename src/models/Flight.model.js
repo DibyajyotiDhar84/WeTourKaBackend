@@ -39,10 +39,10 @@ const flightSchema = new Schema({
 
 });
 
-flightSchema.index({'origin.airport_code':'text',
-                    'destination.airport_code':'text',
-                    "origin.city": "text", 
-                    "destination.city": "text"});
+flightSchema.index({'origin.airport_code':1,
+                    'destination.airport_code':1,
+                    'origin.city': 1, 
+                    'destination.city': 1});
 
 
 

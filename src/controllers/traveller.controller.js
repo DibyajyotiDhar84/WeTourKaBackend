@@ -11,6 +11,36 @@ import { flightInstanceModel } from "../models/flightInstance.model.js";
 
 //Travellers flights controller--------->>>>>>>>>>>>>>
 
+export const findFlightFromID = asyncHandler(async(req,res)=>{
+    const {flightId,fDate} = req.query;
+    if(!flightId){
+        throw new ApiError(400,"provide flightID");
+    }
+
+    const flight = await flightModel.findById(flightId);
+    if(!flight){
+        throw new ApiError(404,"No flight found with this FlightID");
+    }
+    const instance = await flightInstanceModel.findOne({
+        template_id:flightId,
+        date:fDate
+    });
+    const booked_seats = instance?instance.booked_seats:[];
+    const booked_seats_length = instance?instance.booked_seats.length : 0;
+
+    const results = {
+        ...flight._doc,
+        date:fDate,
+        booked_seats,
+        available_Seat_count: flight.aircraft.capacity - booked_seats_length,
+        instanceId: instance ? instance._id : null
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,"flight found",results,true)
+    )
+});
+
 export const bookFlight = asyncHandler(async(req,res)=>{
 
     console.log(" inside book flight");
