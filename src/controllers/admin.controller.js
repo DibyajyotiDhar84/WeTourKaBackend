@@ -88,15 +88,4 @@ export const allFlights=asyncHandler(async(req,res)=>{
 
 });
 
-// export const allRunningFlights= asyncHandler(async(req,res)=>{
-//     const allFlights = await flightModel.find({status:{$ne:"Cancelled"}});
-//     if(!allFlights){
-//         throw new ApiError(404,"No running flights");
-//     }
-
-//     res.status(200).json(
-//         new ApiResponse(200,"all running flights fetch sucessfully",allFlights,true)
-//     )
-
-// });
 

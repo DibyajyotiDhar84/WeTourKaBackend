@@ -46,7 +46,7 @@ export const findFlightFromID = asyncHandler(async(req,res)=>{
 
 export const bookFlight = asyncHandler(async(req,res)=>{
 
-    const loggedinEmail=req.user.user.email;
+    const loggedinEmail=req.user.email;
     const session = await mongoose.startSession();
     session.startTransaction();
     
@@ -106,16 +106,19 @@ export const bookFlight = asyncHandler(async(req,res)=>{
         instance.booked_seats.push(...selectedSeats);
         await instance.save({session});
 
-        const bookedFlight= await flightBookingModel.create([{
+        const [bookedFlight]= await flightBookingModel.create([{
             user_id:user_Id,
             instance_id:instance._id,
             passengers:passengerIds,
             total_Price
         }],{session});
+       
 
-        const bookedRes = await flightBookingModel.findOne(bookFlight._id).populate("instance_id")
-                                                                          .populate("passengers")
-                                                                          .lean();
+        const bookedRes = await flightBookingModel.findById(bookedFlight._id).session(session)
+                                                                            .populate({path: 'instance_id',model: 'FlightInstance',populate: {path: 'template_id',model: 'flights'}})
+                                                                            .populate("passengers")
+                                                                            .lean();
+        
 
         await session.commitTransaction();
         res.status(200).json(
@@ -133,9 +136,60 @@ export const bookFlight = asyncHandler(async(req,res)=>{
 
 });
 
+export const searchFlightPNR = asyncHandler(async(req,res)=>{
+    const userId = req.user.user_id;
+    const userRole = req.user.role;
+    if(!userId || userRole!=='TRAVELLER' ){
+        throw new ApiError(401,"unauthorized access")
+    }
+    const bookedFlightDetails = await flightBookingModel.find({user_id:userId}).populate({path: 'instance_id',model: 'FlightInstance',populate: {path: 'template_id',model: 'flights'}})
+                                                                                  .populate('passengers');
+
+    if(!bookedFlightDetails){
+        throw new ApiError(404,"booked flight details not found with given userId");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,"details fetched successfully",bookedFlightDetails,true)
+    )
+});
+
+export const cancelBookedFlight = asyncHandler(async(req,res)=>{
+    const {pnr_number} = req.query;
+       
+    
+    if(!pnr_number){
+        throw new ApiError(404,"pnr not found");
+    }
+    const flightDetails = await flightBookingModel.findOne({pnr_number:pnr_number})
+                                                  .populate({path: 'instance_id',model: 'FlightInstance',populate: {path: 'template_id',model: 'flights'}})
+                                                  .populate('passengers')
+
+    if(!flightDetails){
+        throw new ApiError(404, "flight Details not found");
+    }
+
+    if(flightDetails.booking_status=='Cancelled'){
+        throw new ApiError(400,"This booking is already cancelled");
+    }
+
+    if (flightDetails.instance_id?.booked_seats && flightDetails.instance_id?.status) {
+        flightDetails.instance_id.booked_seats = [];
+        flightDetails.instance_id.status="Cancelled";
+        await flightDetails.instance_id.save();
+    }
+
+    flightDetails.booking_status='Cancelled';
+    await flightDetails.save();
+
+    res.status(200).json(
+        new ApiResponse(200,"Booking cancelled successfully",flightDetails,true)
+    )
+});
+
 //package booking
 export const bookPackage = asyncHandler(async (req, res) => {
-    const loggedinUserID=req.user.user.user_id;
+    const loggedinUserID=req.user.user_id;
 
     const { package_id, travellers, user_id } = req.body;
 
@@ -160,7 +214,7 @@ export const bookPackage = asyncHandler(async (req, res) => {
     const travellerIds = createdTravellers.map(t => t._id);
 
     const newBooking = new Booking({
-      user_id: user_id || req.user?._id, 
+      user_id: user_id || req.user?.user_id, 
       package_id,
       travellers: travellerIds, // Array of the newly generated IDs
       booking_status: 'Confirmed' 

@@ -1,6 +1,6 @@
 import {body,checkSchema} from 'express-validator'
 import { ROLES, ROLES_noADMIN } from '../../constants.js';
-console.log(ROLES_noADMIN);
+// console.log(ROLES_noADMIN);
 
 export const validateRegiter=[
 

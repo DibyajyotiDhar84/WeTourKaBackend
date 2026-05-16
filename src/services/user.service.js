@@ -15,7 +15,7 @@ export const registerUser = async (name,email,password,role,phone)=>{
         const user = new UserModel({name,email,password:hashedPass,role,phone});
         const registereduser = await user.save();
         const userTores= await UserModel.findById(registereduser._id).select("-password");
-        console.log("success saving ");
+        // console.log("success saving ");
        
         return new ApiResponse(200,"User Succesfully registered",userTores,true);
         
@@ -38,17 +38,13 @@ export const authenticateUser=async (email,password)=>{
     try {
         let user = await UserModel.find({email});
         user=user[0];  
-        console.log(user);
         if(!await user.isCorrectPassword(password)){
             throw "Incorrect Password";
         }
         const token = await getJWT(user);
-        console.log("ccdwde");
         return new ApiResponse(200,"login Successful",{token},true);
         
     } catch (error) {
-
-        console.log(error);
         
         return new ApiResponse(400,error.message||error);   
         

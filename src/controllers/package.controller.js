@@ -4,7 +4,6 @@ import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const addPackage = asyncHandler(async (req, res) => {
-  console.log(req.body.user_id);
 
   const newPackage = new Package({
     ...req.body,

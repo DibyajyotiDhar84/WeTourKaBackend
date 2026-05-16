@@ -26,7 +26,7 @@ export const register = async (req,res)=>{
 
 export const authenticate = async (req,res)=>{
     const {email,password}=req.body;
-    console.log(email, password);
+    // console.log(email, password);
     const user = await authenticateUser(email,password);
     res.status(user.statusCode).json(user)
 }
@@ -108,7 +108,7 @@ export const searchPackages = asyncHandler(async (req, res) => {
     }
 
     const results = await Package.find(query);
-    console.log(results);
+    // console.log(results);
     res.status(200).json(
         new ApiResponse(200, "Package Found!", results, true));
   }) ;

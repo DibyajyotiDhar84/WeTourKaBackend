@@ -12,7 +12,7 @@ export const asyncHandler=(requestHandler)=>async(req,res,next)=>{
       statusCode=401;
       error.message="Jwt Expired";
     }
-    console.log(error);
+    // console.log(error);
    
     res.status(statusCode).json({
       success: false,
