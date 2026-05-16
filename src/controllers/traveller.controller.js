@@ -135,12 +135,12 @@ export const bookFlight = asyncHandler(async(req,res)=>{
 
 //package booking
 export const bookPackage = asyncHandler(async (req, res) => {
-    const loggedinUserID=req.user.user.user_id;
+    const loggedinUserID=req.user?.user?.user_id;
 
     const { package_id, travellers, user_id } = req.body;
 
-    if(loggedinUserID !== user_id){
-        throw new ApiError(400,"tampering done in token");
+     if (!loggedinUserID || loggedinUserID !== user_id) {
+        throw new ApiError(403, "Unauthorized: Token mismatch or invalid user session");
     }
 
     const pkg = await Package.findById(package_id);
@@ -153,7 +153,7 @@ export const bookPackage = asyncHandler(async (req, res) => {
 
     if (pkg.max_capacity < travellers.length) {
       //return res.status(400).json({ message: "Not enough slots available" });
-      throw ApiError(400, "Not enough slots available");
+      throw new ApiError(400, "Not enough slots available");
     }
 
     const createdTravellers = await Traveller.insertMany(travellers);
@@ -162,7 +162,7 @@ export const bookPackage = asyncHandler(async (req, res) => {
     const newBooking = new Booking({
       user_id: user_id || req.user?._id, 
       package_id,
-      travellers: travellerIds, // Array of the newly generated IDs
+      travellers: travellerIds,
       booking_status: 'Confirmed' 
     });
 
