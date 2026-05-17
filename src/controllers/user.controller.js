@@ -6,6 +6,7 @@ import { flightModel } from "../models/Flight.model.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { flightInstanceModel } from "../models/flightInstance.model.js";
 import {Package} from '../models/package.model.js'
+import { hotelModel } from "../models/hotel.model.js";
 
 
 //user's auth controller----------->>>>>>>>
@@ -112,3 +113,42 @@ export const searchPackages = asyncHandler(async (req, res) => {
     res.status(200).json(
         new ApiResponse(200, "Package Found!", results, true));
   }) ;
+
+  //Hotel Controller
+  export const getHotelDetails = asyncHandler(async(req,res,next)=>{
+    const {id} = req.params;
+
+    const hotel = await hotelModel.findById(id);
+
+    if(!hotel){
+        throw new ApiError("This hotel does not exist ")
+    }
+
+    res.status(201).json(
+        new ApiResponse(200, "Hotel details got", hotel, true)
+    );
+})
+
+export const getHotelsByLoc = asyncHandler (async(req,res)=>{
+    
+        const  location  = req.params.location ;   
+
+        if(!location){
+            throw new ApiError(400, "Please provide location")
+        }
+        const query = {location: { $regex:location , $options: "i"}};
+
+        const hotels = await hotelModel.find(query);
+
+        if(!hotels){
+            throw new ApiError(404, "Hotel not found in this perticular location")
+        }
+
+
+        res.status(200).json(
+            new ApiResponse(200, "Hotel Found", hotels, true)
+        );
+    
+        
+}
+);
