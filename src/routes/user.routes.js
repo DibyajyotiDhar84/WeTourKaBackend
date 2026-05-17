@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate, isEmailExists, register, searchFlights, searchOrigin } from '../controllers/user.controller.js';
+import { authenticate, getHotelDetails, getHotelsByLoc, isEmailExists, register, searchFlights, searchOrigin } from '../controllers/user.controller.js';
 import {validateRegiter} from '../middlewares/validators/register.validator.mjs';
 import {validate} from '../middlewares/validate.mjs';
 import { searchPackages } from '../controllers/user.controller.js';
@@ -13,6 +13,11 @@ router.get('/validateEmail/:email',isEmailExists);
 
 router.get('/searchFlight',searchFlights);
 router.get('/searchOrigin/:searchWord',searchOrigin);
+
+//hotel routes-------------
+router.get('/getHotels/:location', getHotelsByLoc)
+
+router.get('/getHotelDetails/:id', getHotelDetails)
 
 
 //package.search

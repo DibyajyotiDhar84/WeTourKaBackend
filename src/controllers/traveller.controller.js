@@ -229,3 +229,76 @@ export const bookPackage = asyncHandler(async (req, res) => {
     );
 
 });
+
+//hotel booking
+
+export const hotelBooking = asyncHandler(async(req,res,next)=>{
+    
+    try{
+        const {hotelId, roomType, travellers, totalPrice, checkInDate, checkOutDate} = req.body;
+        console.log(req.user);
+
+        const userId = req.user._id || req.user.user._id;
+
+    const booking = await BookingModel.create({
+        userId,
+        hotelId,
+        travellers,
+        totalPrice,
+        roomType,
+        checkInDate,
+        checkOutDate,
+        numRoomsBooked: travellers.length
+    });
+    const roomsKey = `roomsAvailable.${roomType}`;
+
+    const updateHotel = await hotelModel.findByIdAndUpdate(
+        hotelId,
+        {$inc:{[roomsKey]: -travellers.length}},
+        {new:true}
+    );
+    if(!updateHotel){
+        throw new ApiError(404, "Hotel not found during update");
+    }
+
+
+    res.status(201).json(new ApiResponse(201,"Booking Confirmed",booking,true))
+    }catch(error){
+        throw  new ApiError(500, "Booking not confimred", error);
+    }
+    
+
+
+})
+
+export const cancelBooking = asyncHandler(async(req,res,next)=>{
+   const { id }= req.query;
+
+    if(!id){
+       
+        throw new ApiError(404,"Id required");
+    }
+
+    const booking = await BookingModel.findById( id);
+
+    if(!booking){
+       
+        throw new ApiError(404,"Booking not found");
+    }
+
+    if(booking.status === "cancelled"){
+
+        throw new ApiError(400,"You have already cancelled your booking", null, false);
+    }
+    const roomFiled = `roomsAvailable.${booking.roomType}`;
+    await hotelModel.findByIdAndUpdate(booking.hotelId, {
+        $inc: {[roomFiled]: booking.numRoomsBooked}
+    });
+
+    booking.status = "cancelled";
+    await booking.save();
+
+    
+    res.status(200).json(new ApiResponse(201,"Booking cancelled and rooms restored", null ,true));
+
+});
