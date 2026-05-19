@@ -173,9 +173,10 @@ export const cancelBookedFlight = asyncHandler(async(req,res)=>{
         throw new ApiError(400,"This booking is already cancelled");
     }
 
-    if (flightDetails.instance_id?.booked_seats && flightDetails.instance_id?.status) {
-        flightDetails.instance_id.booked_seats = [];
-        flightDetails.instance_id.status="Cancelled";
+    if (flightDetails.instance_id?.booked_seats?.length) {
+        const passengersSeats = flightDetails.passengers.map(p=>p.seat);
+        flightDetails.instance_id.booked_seats = flightDetails.instance_id.booked_seats
+                                                                          .filter(seat=>!passengersSeats.includes(seat));
         await flightDetails.instance_id.save();
     }
 
@@ -301,4 +302,67 @@ export const cancelBooking = asyncHandler(async(req,res,next)=>{
     
     res.status(200).json(new ApiResponse(201,"Booking cancelled and rooms restored", null ,true));
 
+});
+
+//hotel Review 
+export const AddReview = asyncHandler(async(req,res)=>{
+
+    const { itemId, category, rating, comment } = req.body;
+    const userId = req.user.user_id;
+
+    if (!itemId || !category || !rating || !comment) {
+      throw new ApiError(400,"All feilds are required");
+    }
+
+    const newReview = await reviewModel.create({
+      userId,
+      itemId,
+      category,
+      rating,
+      comment
+    });
+
+    res.status(201).json(
+        new ApiResponse(201,"review added successFully",{review:newReview},true)
+    )
+
+});
+
+export const getReviewByItemId = asyncHandler(async(req,res)=>{
+
+    const { itemId } = req.query;
+    if(!itemId){
+        throw new ApiError(400,"Please provide the itemId")
+    }
+    const reviews = await reviewModel.find({ itemId })
+                                     .populate('userId','name')
+                                     .sort({ createdAt: -1 });
+
+    if (!reviews || reviews.length === 0) {
+      throw new ApiError(404,"No reviews found for this item");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,"reviews fetched for the itemId",reviews,true)
+    )
+
+});
+
+export const deleteReview = asyncHandler(async(req,res)=>{
+
+    const { itemId } = req.params;
+    const userId = req.user.user_id;
+
+    const deletedReview = await reviewModel.findOneAndDelete({
+      userId: userId,
+      itemId: itemId
+    });
+
+    if (!deletedReview) {
+     throw new ApiError(404,"review not found");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,"Review deleted successfully and ratings updated")
+    )
 });

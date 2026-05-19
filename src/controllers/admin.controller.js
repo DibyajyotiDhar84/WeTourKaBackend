@@ -1,4 +1,6 @@
 import { flightModel } from '../models/Flight.model.js';
+import { flightBookingModel } from '../models/flightBooking.model.js';
+import { flightInstanceModel } from '../models/flightInstance.model.js';
 import { UserModel } from '../models/User.model.js';
 import ApiError from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
@@ -77,15 +79,56 @@ export const addFlight =asyncHandler(async(req,res)=>{
 });
 
 export const allFlights=asyncHandler(async(req,res)=>{
-    const fl= await flightModel.find();
-    if(!fl){
-        throw new ApiError(404,"No flights");
+
+    const flightInstance= await flightInstanceModel.find().populate('template_id');
+    if(!flightInstance){
+        throw new ApiError(404,"No flights instances");
     }
 
     res.status(200).json(
-        new ApiResponse(200,"All flights fetch successfully",fl,true)
+        new ApiResponse(200,"All flights Instances fetch successfully",flightInstance,true)
     )
 
+});
+
+export const cancelFlight=asyncHandler(async(req,res)=>{
+    const {fIid}=req.query;
+    if(!fIid){
+        throw new ApiError(400,"provide flight instance Id")
+    }
+    const flightIns = await flightInstanceModel.findOne({_id:fIid});
+    if(!flightIns){
+        throw new ApiError(404,"flight instance couldn't found with given instance id")
+    }
+    if (flightIns.status === "Cancelled") {
+        throw new ApiError(400, "This flight is already cancelled");
+    }
+
+    flightIns.status="Cancelled";
+    await flightIns.save();
+
+    // const allBookings = await flightBookingModel.find({instance_id:fIid,booking_status:'Confirmed'});
+
+    // for(let booking of allBookings){
+        //refund logic--->>
+    // }
+
+
+    await flightBookingModel.updateMany(
+        { 
+            instance_id: fIid, 
+            booking_status: "Confirmed" 
+        },
+        { 
+            $set: { booking_status: "Cancelled" } 
+        }
+    );
+
+
+
+    res.status(200).json(
+        new ApiResponse(200,"Flight cancelled successfully",flightIns,true)
+    )
 });
 
 

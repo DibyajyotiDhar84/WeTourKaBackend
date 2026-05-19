@@ -24,8 +24,8 @@ const hotelSchema = new Schema(
            }
         },
         rating:{
-            type:Number, // Rating reference data model 
-            required:true,
+            type:Schema.Types.ObjectId,
+            ref:'Reviews', 
         },
         pricePerNight:{
             standard:{
