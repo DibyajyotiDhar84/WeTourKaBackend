@@ -190,13 +190,10 @@ export const cancelBookedFlight = asyncHandler(async(req,res)=>{
 
 //package booking
 export const bookPackage = asyncHandler(async (req, res) => {
-    const loggedinUserID=req.user.user_id;
+    const user_id=req.user?.user_id;
 
-    const { package_id, travellers, user_id } = req.body;
+    const { package_id, travellers } = req.body;
 
-    if(loggedinUserID !== user_id){
-        throw new ApiError(400,"tampering done in token");
-    }
 
     const pkg = await Package.findById(package_id);
     if (!pkg) throw new ApiError(404,"Package not found");

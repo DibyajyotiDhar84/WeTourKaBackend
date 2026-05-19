@@ -5,6 +5,7 @@ import { UserModel } from '../models/User.model.js';
 import ApiError from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import {asyncHandler} from '../utils/asyncHandler.js';
+import { Package } from '../models/package.model.js';
 
 export const getAllUsers= asyncHandler(async(req,res)=>{
 
@@ -129,6 +130,13 @@ export const cancelFlight=asyncHandler(async(req,res)=>{
     res.status(200).json(
         new ApiResponse(200,"Flight cancelled successfully",flightIns,true)
     )
+});
+
+
+export const getAllPackages = asyncHandler(async (req, res) => {
+  const packages = await Package.find()
+                                .populate('user_id', 'name email');
+  res.status(200).json(new ApiResponse(200, "All Packages found", packages, true));
 });
 
 

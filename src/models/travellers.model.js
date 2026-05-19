@@ -16,7 +16,6 @@ const travellerSchema = new Schema({
 
   age: {
     type: Number,
-    required: true,
     min: 0,
     max: 120
   },
@@ -25,7 +24,7 @@ const travellerSchema = new Schema({
     id_type: { 
       type: String, 
       required: true,
-      enum: ['Passport', 'Aadhaar', 'Driver License', 'National ID']
+      enum: ['Passport', 'Aadhaar', 'Driver License', 'VoterID']
     },
     id_number: { 
       type: String, 

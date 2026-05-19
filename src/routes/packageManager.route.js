@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import { 
     addPackage, 
-    getAllPackages,
+    getAllPManPackages,
     updatePackage
 }
 from '../controllers/package.controller.js';
 
 const router = Router();
 
-router.route('/').get(getAllPackages)
+router.route('/').get(getAllPManPackages)
                  .post(addPackage)
 
 router.patch('/update/:id', updatePackage);

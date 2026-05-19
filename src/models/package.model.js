@@ -65,7 +65,7 @@ const packageSchema = new Schema({
   max_capacity: { type: Number, default: 20 },
   status: { 
     type: String, 
-    enum: ['Active', 'Draft', 'Archived'], 
+    enum: ['Active', 'Sold Out', 'Selling Fast'], 
     default: 'Active' 
   }
 }, { 
@@ -74,8 +74,7 @@ const packageSchema = new Schema({
 
 
 packageSchema.index({destination:1, start_date:1});
-// --- HOOKS ---
-// Validate dates before saving
+
 packageSchema.pre('save', function() {
   if (this.start_date >= this.end_date) {
     return new Error('End date must be strictly after start date.')

@@ -7,23 +7,22 @@ export const addPackage = asyncHandler(async (req, res) => {
 
   const newPackage = new Package({
     ...req.body,
-    user_id: req.body.user_id
+    user_id: req.user.user_id
   });
 
   //const savedPackage = await newPackage.save();
   await newPackage.save();
   const savedPackage = await Package.findOne(Package._id).populate("user_id").lean();
 
-  //res.status(201).json(savedPackage);
   res.status(201).json(new ApiResponse(200, "Package created!", savedPackage, true));
 });
 
 
 
-export const getAllPackages = asyncHandler(async (req, res) => {
-  const packages = await Package.find({ status: 'Active' })
+export const getAllPManPackages = asyncHandler(async (req, res) => {
+  const user_id = req.user.user_id;
+  const packages = await Package.find({ user_id:user_id })
     .populate('user_id', 'name email');
-  //res.status(200).json(packages);
   res.status(200).json(new ApiResponse(200, "All Packages found", packages, true));
 });
 

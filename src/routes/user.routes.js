@@ -21,6 +21,6 @@ router.get('/getHotelDetails/:id', getHotelDetails)
 
 
 //package.search
-router.get('/search', searchPackages);
+router.get('/searchPackage', searchPackages);
 
 export default router;
