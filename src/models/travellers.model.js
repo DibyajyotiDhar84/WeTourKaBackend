@@ -16,8 +16,7 @@ const travellerSchema = new Schema({
 
   age: {
     type: Number,
-    required: true,
-    min: 0,
+    min: 1,
     max: 120
   },
 
@@ -36,6 +35,7 @@ const travellerSchema = new Schema({
 
   gender: {
     type: String,
+    required: true,
     enum: ['Male', 'Female', 'Other']
   },
 

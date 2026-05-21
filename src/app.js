@@ -32,7 +32,6 @@ app.use("/traveller",verifyTraveller,travellerRouter);
 
 app.use("/package",verifyPackageManager, packageManagerRouter);
 
-
 //test of globalErrorHandler--->>>
 app.post('/testGEH',(req,res,next)=>{
     const err= new Error('pata nahi kya error hai');

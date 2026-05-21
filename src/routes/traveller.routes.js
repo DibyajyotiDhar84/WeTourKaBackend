@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { bookFlight, findFlightFromID } from '../controllers/traveller.controller.js';
+import { bookFlight, cancelPackage, findFlightFromID } from '../controllers/traveller.controller.js';
 import { bookPackage } from '../controllers/traveller.controller.js';
 const router = Router();
 
@@ -9,5 +9,7 @@ router.post("/bookFlight",bookFlight);
 //package.book
 router.post('/book', bookPackage);
 
+//package.cancel
+router.put("/cancel", cancelPackage);
 
 export default router;

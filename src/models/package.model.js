@@ -48,7 +48,7 @@ const packageSchema = new Schema({
     },
     departure_from: { type: String, required: true },
     arrival_at: { type: String, required: true },
-    carrier: { type: String }, 
+    carrier: { type: String },
     is_round_trip: { type: Boolean, default: true }
   },
 

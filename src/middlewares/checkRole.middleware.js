@@ -24,6 +24,7 @@ export const verifyAdmin= asyncHandler(async(req,res,next)=>{
 });
 
 export const verifyTraveller= asyncHandler(async(req,res,next)=>{
+    console.log("0")
     const authHeader = req.headers['authorization'];
     if(!authHeader || !authHeader.startsWith('Bearer')){
         throw new ApiError(401,"Access token required");
@@ -33,7 +34,7 @@ export const verifyTraveller= asyncHandler(async(req,res,next)=>{
     if(payload.user.role!=='TRAVELLER'){
         throw new ApiError(403,"Traveller access required");
     }
-    req.user=payload;
+    req.user=payload.user;
     next();
 });
 
@@ -61,6 +62,6 @@ export const verifyPackageManager= asyncHandler(async(req,res,next)=>{
     if(payload.user.role!=='PACKAGE_MANAGER'){
         throw new ApiError(403,"PACKAGE_MANAGER access required");
     }
-    req.user=payload;
+    req.user=payload.user;
     next();
 });

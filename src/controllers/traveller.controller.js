@@ -130,43 +130,75 @@ export const bookFlight = asyncHandler(async(req,res)=>{
 
 //package booking
 export const bookPackage = asyncHandler(async (req, res) => {
-    const loggedinUserID=req.user.user.user_id;
+    const user_id = req.user.user_id;
+    console.log(user_id);
 
-    const { package_id, travellers, user_id } = req.body;
+    const { package_id, travellers } = req.body;
 
-    if(loggedinUserID !== user_id){
-        throw new ApiError(400,"tampering done in token");
-    }
+    // if (!loggedinUserID || loggedinUserID !== user_id) {
+    //     throw new ApiError(403, "Unauthorized: Token mismatch or invalid user session");
+    // }
 
     const pkg = await Package.findById(package_id);
     if (!pkg) throw new ApiError(404,"Package not found");
 
     if (!travellers || travellers.length === 0) {
-      //return res.status(400).json({ message: "Traveller details are required" });
       throw new ApiError(400,"Traveller details are required");
     }
 
     if (pkg.max_capacity < travellers.length) {
-      //return res.status(400).json({ message: "Not enough slots available" });
-      throw ApiError(400, "Not enough slots available");
+      throw new ApiError(400, "Not enough slots available");
     }
 
     const createdTravellers = await Traveller.insertMany(travellers);
     const travellerIds = createdTravellers.map(t => t._id);
 
     const newBooking = new Booking({
-      user_id: user_id || req.user?._id, 
+      user_id: user_id,
       package_id,
-      travellers: travellerIds, // Array of the newly generated IDs
+      travellers: travellerIds, 
       booking_status: 'Confirmed' 
     });
+    console.log("1")
 
      await newBooking.save();
      const savedBooking = await Booking.findOne(newBooking._id).populate("package_id")
                                                                 .populate("travellers").lean();
-    
+    console.log("2")
     res.status(201).json(
         new ApiResponse(201,"Booking successfull", {booking: savedBooking},true)
     );
 
+});
+
+
+
+// package cancel
+export const cancelPackage = asyncHandler(async (req, res) => {
+  const loggedinUserID = req.user.user.user_id;
+  const { bookingId } = req.body;
+
+  const updatedBooking = await Booking.findOneAndUpdate(
+    {
+      _id: bookingId,
+      user_id: loggedinUserID,
+      booking_status: { $ne: 'Cancelled' } 
+    },
+    {
+      $set: { booking_status: 'Cancelled', payment_status: 'Refunded' }
+    },
+    { new: true } 
+  );
+
+  if (!updatedBooking) {
+    throw new ApiError(400, "Cancellation failed. Invalid booking ID, unauthorized, or already cancelled.");
+  }
+
+  await Package.findByIdAndUpdate(updatedBooking.package_id, {
+    $inc: { max_capacity: updatedBooking.travellers.length }
+  });
+
+  res.status(200).json(
+    new ApiResponse(200, "Package booking cancelled successfully", updatedBooking, true)
+  );
 });

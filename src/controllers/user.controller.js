@@ -94,7 +94,7 @@ export const searchOrigin= asyncHandler(async(req,res)=>{
     )
 });
 
-//package controller
+//package search
 export const searchPackages = asyncHandler(async (req, res) => {
     const { destination, start_date } = req.query;
     let query = { status: 'Active' };

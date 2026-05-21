@@ -18,4 +18,6 @@ router.get('/searchOrigin/:searchWord',searchOrigin);
 //package.search
 router.get('/search', searchPackages);
 
+
+
 export default router;
