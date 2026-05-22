@@ -7,6 +7,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { flightInstanceModel } from "../models/flightInstance.model.js";
 import {Package} from '../models/package.model.js'
 import { hotelModel } from "../models/hotel.model.js";
+import { reviewModel } from "../models/reviewModel.js";
 
 
 //user's auth controller----------->>>>>>>>
@@ -114,7 +115,7 @@ export const searchPackages = asyncHandler(async (req, res) => {
         new ApiResponse(200, "Package Found!", results, true));
   }) ;
 
-  //Hotel Controller
+ //Hotel Controller
   export const getHotelDetails = asyncHandler(async(req,res,next)=>{
     const {id} = req.params;
 
@@ -152,3 +153,23 @@ export const getHotelsByLoc = asyncHandler (async(req,res)=>{
         
 }
 );
+
+export const getReviewByItemId = asyncHandler(async(req,res)=>{
+
+    const { itemId } = req.query;
+    if(!itemId){
+        throw new ApiError(400,"Please provide the itemId")
+    }
+    const reviews = await reviewModel.find({ itemId })
+                                     .populate('userId','name')
+                                     .sort({ createdAt: -1 });
+
+    if (!reviews || reviews.length === 0) {
+      throw new ApiError(404,"No reviews found for this item");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,"reviews fetched for the itemId",reviews,true)
+    )
+
+});

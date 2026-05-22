@@ -3,6 +3,11 @@ import { Schema, model } from 'mongoose';
 
 const hotelSchema = new Schema(
     {
+        user_id:{
+            type:Schema.Types.ObjectId,
+            ref:'users',
+            required:true
+        },
         name:{
             type:String,
             required:true,

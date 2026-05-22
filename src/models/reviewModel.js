@@ -54,7 +54,7 @@ reviewSchema.statics.calculateAverage = async function(itemId, category) {
       ratingsAverage: Math.round(stats[0].avgRating * 10) / 10
     });
   } else {
-    await mongoose.model(category).findByIdAndUpdate(itemId, {
+    await model(category).findByIdAndUpdate(itemId, {
       ratingsQuantity: 0,
       ratingsAverage: 0
     });

@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { addFlight, allFlights, cancelFlight, getAllPackages, getAllUsers } from "../controllers/admin.controller.js";
-import { getAllHotels } from "../controllers/hotelManager.controller.js";
+import { addFlight, allFlights, cancelFlight, getAllHotels,  getAllHPFBookings, getAllPackages, getAllUsers } from "../controllers/admin.controller.js";
+
 
 const router = new Router();
 router.route("/users")
@@ -18,6 +18,9 @@ router.route('/hotel')
 
 router.route('/TourPackage')
         .get(getAllPackages)
+
+router.route('/all')
+        .get(getAllHPFBookings)
 
 
 export default router;

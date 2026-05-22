@@ -12,6 +12,11 @@ const bookingSchema = Schema(
             ref:'Hotels',
             required:true,
         },
+        hotelUserId:{
+            type:Schema.Types.ObjectId,
+            ref:'users',
+            required:true,
+        },
         travellers:[
             {
                name:{type:String, required:true},
@@ -53,7 +58,9 @@ const bookingSchema = Schema(
         timestamps:true,
     }
 
-)
+);
+
+bookingSchema.index=({userId:1,hotelId:1});
 
 export const BookingModel = model("BookedHotel", bookingSchema);
 

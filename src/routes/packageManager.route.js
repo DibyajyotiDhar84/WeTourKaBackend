@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { 
     addPackage, 
+    bookingGuestList, 
+    deletePackage, 
     getAllPManPackages,
     updatePackage
 }
@@ -8,9 +10,14 @@ from '../controllers/package.controller.js';
 
 const router = Router();
 
-router.route('/').get(getAllPManPackages)
+router.route('/package').get(getAllPManPackages)
                  .post(addPackage)
+                 .patch(updatePackage)
+                 .delete(deletePackage)
 
-router.patch('/update/:id', updatePackage);
+
+router.route('/getGuest').get(bookingGuestList)
+
+
 
 export default router;

@@ -10,6 +10,9 @@ import { flightInstanceModel } from "../models/flightInstance.model.js";
 import { Package } from "../models/package.model.js";
 import { Traveller } from "../models/travellers.model.js";
 import { Booking } from "../models/package.booking.model.js";
+import { reviewModel } from "../models/reviewModel.js";
+import { BookingModel } from "../models/hotelBooking.model.js";
+import { hotelModel } from "../models/hotel.model.js";
 
 //Travellers flights controller--------->>>>>>>>>>>>>>
 
@@ -52,7 +55,9 @@ export const bookFlight = asyncHandler(async(req,res)=>{
     
 
     try{
-        const {user_Id, template_Id, date,passengers, total_Price}=req.body;
+        const {user_Id, template_Id, date,passengers, total_price}=req.body;
+        
+        
         const searchDate = new Date(date);        
         
         const user=await UserModel.findById(user_Id).session(session);
@@ -110,7 +115,7 @@ export const bookFlight = asyncHandler(async(req,res)=>{
             user_id:user_Id,
             instance_id:instance._id,
             passengers:passengerIds,
-            total_Price
+            total_price:total_price
         }],{session});
        
 
@@ -228,19 +233,50 @@ export const bookPackage = asyncHandler(async (req, res) => {
 
 });
 
+export const cancelPackage = asyncHandler(async (req, res) => {
+  const loggedinUserID = req.user.user_id;
+  const { bookingId } = req.query;
+ 
+  const updatedBooking = await Booking.findOneAndUpdate(
+    {
+      _id: bookingId,
+      user_id: loggedinUserID,
+      booking_status: { $ne: 'Cancelled' }
+    },
+    {
+      $set: { booking_status: 'Cancelled', payment_status: 'Refunded' }
+    },
+    { new: true }
+  );
+ 
+  if (!updatedBooking) {
+    throw new ApiError(400, "Cancellation failed. Invalid booking ID, unauthorized, or already cancelled.");
+  }
+ 
+  await Package.findByIdAndUpdate(updatedBooking.package_id, {
+    $inc: { max_capacity: updatedBooking.travellers.length }
+  });
+ 
+  res.status(200).json(
+    new ApiResponse(200, "Package booking cancelled successfully", updatedBooking, true)
+  );
+}); 
+
 //hotel booking
 
 export const hotelBooking = asyncHandler(async(req,res,next)=>{
     
     try{
-        const {hotelId, roomType, travellers, totalPrice, checkInDate, checkOutDate} = req.body;
-        console.log(req.user);
+        const {hotelId,hotelUserId, roomType, travellers, totalPrice, checkInDate, checkOutDate} = req.body;
 
-        const userId = req.user._id || req.user.user._id;
+        const userId = req.user.user_id;
+        console.log(hotelUserId);
+        
 
     const booking = await BookingModel.create({
         userId,
         hotelId,
+        hotelUserId,
         travellers,
         totalPrice,
         roomType,
@@ -260,7 +296,7 @@ export const hotelBooking = asyncHandler(async(req,res,next)=>{
     }
 
 
-    res.status(201).json(new ApiResponse(201,"Booking Confirmed",booking,true))
+    res.status(200).json(new ApiResponse(200,"Booking Confirmed",booking,true))
     }catch(error){
         throw  new ApiError(500, "Booking not confimred", error);
     }
@@ -311,6 +347,21 @@ export const AddReview = asyncHandler(async(req,res)=>{
       throw new ApiError(400,"All feilds are required");
     }
 
+    let bookingRecord;
+
+    if(category=='Hotels'){
+        bookingRecord =  await BookingModel.findOne({userId:userId,hotelId:itemId});
+
+    }else if(category=='Package'){
+        bookingRecord= await Booking.findOne({user_id:userId,package_id:itemId});
+    }
+
+    if(!bookingRecord){
+        throw new ApiError(400,`No ${category} booking found for this userId and ${category}Id`);
+    }
+
+     
+
     const newReview = await reviewModel.create({
       userId,
       itemId,
@@ -319,35 +370,18 @@ export const AddReview = asyncHandler(async(req,res)=>{
       comment
     });
 
+    const review = await reviewModel.findOne({_id:newReview._id}).populate('itemId').lean();
+
     res.status(201).json(
-        new ApiResponse(201,"review added successFully",{review:newReview},true)
+        new ApiResponse(201,"review added successFully",{review},true)
     )
 
 });
 
-export const getReviewByItemId = asyncHandler(async(req,res)=>{
-
-    const { itemId } = req.query;
-    if(!itemId){
-        throw new ApiError(400,"Please provide the itemId")
-    }
-    const reviews = await reviewModel.find({ itemId })
-                                     .populate('userId','name')
-                                     .sort({ createdAt: -1 });
-
-    if (!reviews || reviews.length === 0) {
-      throw new ApiError(404,"No reviews found for this item");
-    }
-
-    res.status(200).json(
-        new ApiResponse(200,"reviews fetched for the itemId",reviews,true)
-    )
-
-});
 
 export const deleteReview = asyncHandler(async(req,res)=>{
 
-    const { itemId } = req.params;
+    const { itemId } = req.query;
     const userId = req.user.user_id;
 
     const deletedReview = await reviewModel.findOneAndDelete({

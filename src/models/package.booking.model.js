@@ -51,6 +51,8 @@ const bookingSchema = new Schema({
   timestamps: true 
 });
 
+bookingSchema.index({user_id:1,package_id:1});
+
 
 
 // --- HOOKS ---

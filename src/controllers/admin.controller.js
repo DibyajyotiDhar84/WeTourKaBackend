@@ -6,6 +6,10 @@ import ApiError from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import {asyncHandler} from '../utils/asyncHandler.js';
 import { Package } from '../models/package.model.js';
+import { hotelModel } from '../models/hotel.model.js';
+import { BookingModel } from '../models/hotelBooking.model.js';
+import {Booking} from '../models/package.booking.model.js';
+import { populate } from 'dotenv';
 
 export const getAllUsers= asyncHandler(async(req,res)=>{
 
@@ -138,5 +142,92 @@ export const getAllPackages = asyncHandler(async (req, res) => {
                                 .populate('user_id', 'name email');
   res.status(200).json(new ApiResponse(200, "All Packages found", packages, true));
 });
+
+
+export const getAllHotels = asyncHandler(async(req,res)=>{
+
+    let hotels = await hotelModel.find().populate('user_id','name email');
+    
+        if(!hotels){
+            throw new ApiError(404,"NO hotels exists ");
+        }
+    
+        res.status(201).json(
+            new ApiResponse(201, "All Hotels found", hotels, true)
+        );
+
+});
+
+
+export const getAllHPFBookings = asyncHandler(async(req,res)=>{
+ 
+    const [flightBooking,hotelBooking,packageBooking]= await Promise.all([
+        flightBookingModel.find().populate('user_id','name')
+                                 .populate({path: 'instance_id', select: 'date', populate: {path: 'template_id',select: 'flight_number origin.city destination.city'}}),
+
+
+        BookingModel.find().populate('userId','name')
+                            .populate('hotelId','name'),
+
+        Booking.find().populate('user_id','name')
+                       .populate('package_id','destination start_date end_date')
+    ]);
+
+    const transformdFlight = flightBooking.map(f=>({
+        bookingId:f._id,
+        type:'Flight',
+        title:`${f.instance_id?.template_id?.origin?.city}-->${f.instance_id?.template_id?.destination?.city}`,
+        status:f.booking_status,
+        date:formatedDate(f.instance_id?.date),
+        price:f.total_price,
+        details:f.flight_number,
+        username:f.user_id.name
+    }));
+
+        const transformdHotels = hotelBooking.map(h=>({
+        bookingId:h._id,
+        type:'Hotel',
+        title:h.hotelId?.name,
+        status:h.status,
+        date:`${formatedDate(h.checkInDate)}-->${formatedDate(h.checkOutDate)}`,
+        price:h.totalPrice,
+        username:h.userId.name
+        
+
+
+    }));
+
+        const transformdPackage = packageBooking.map(p=>({
+        bookingId:p._id,
+        type:'Package',
+        title:p.package_id.destination,
+        status:p.booking_status,
+        date:`${formatedDate(p.package_id.start_date)}-->${formatedDate(p.package_id.end_date)}`,
+        price:p.total_price,
+        username:p.user_id.name
+        
+
+
+    }));
+
+    const allBookings = [
+        ...transformdFlight,
+        ...transformdHotels,
+        ...transformdPackage
+    ].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+    res.status(200).json(
+        new ApiResponse(200,"allBookings fetch successfully",{allBookings},true)
+    )
+
+
+});
+
+
+function formatedDate(fdate){
+    const p = new Date(fdate);
+    return `${p.getDate()}-${p.getMonth()+1}-${p.getFullYear()}`;
+
+}
 
 
