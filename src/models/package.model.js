@@ -65,7 +65,7 @@ const packageSchema = new Schema({
   max_capacity: { type: Number, default: 20 },
   status: { 
     type: String, 
-    enum: ['Active', 'Sold Out', 'Selling Fast'], 
+    enum: ['Active', 'Draft', 'Archieved'], 
     default: 'Active' 
   }
 }, { 
@@ -81,8 +81,7 @@ packageSchema.pre('save', function() {
   }
 });
 
-// --- METHODS ---
-// Check if the package is joinable (not expired and has space)
+
 packageSchema.methods.isBookable = function() {
   return this.status === 'Active' && 
          this.max_capacity > 0 && 

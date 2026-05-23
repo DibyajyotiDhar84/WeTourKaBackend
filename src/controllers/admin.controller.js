@@ -223,6 +223,97 @@ export const getAllHPFBookings = asyncHandler(async(req,res)=>{
 
 });
 
+export const getAllAdminDashData = asyncHandler(async(req,res)=>{
+
+    const currentYear = parseInt(req.query.year) || new Date().getFullYear();
+    const currentMonth = parseInt(req.query.month) || (new Date().getMonth() + 1); 
+    const startOfMonth = new Date(Date.UTC(currentYear, currentMonth - 1, 1, 0, 0, 0, 0));
+    const endOfMonth = new Date(Date.UTC(currentYear, currentMonth, 0, 23, 59, 59, 999));
+
+    const[flightData,hotelData,tourData,userData] = await Promise.all([
+
+        flightBookingModel.aggregate([
+            {
+                $facet:{
+                    revenue:[{$group:{_id:null,total:{$sum:'$total_price'},count:{$sum:1}}}],
+                    graph:[
+                        {$match:{booked_at:{$gte:startOfMonth,$lte:endOfMonth}}},
+                        {$group:{_id:{$dayOfMonth:'$booked_at'},count:{$sum:1},revenue:{$sum:'total_price'}}}
+                    ]
+                }
+            }
+        ]),
+
+        BookingModel.aggregate([
+        {
+          $facet: {
+            revenue: [{ $group: { _id: null, total: { $sum: '$totalPrice' }, count: { $sum: 1 } } }],
+            graph: [
+              { $match: { createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+              { $group: { _id: { $dayOfMonth: '$createdAt' }, count: { $sum: 1 }, revenue: { $sum: '$totalPrice' } } }
+            ]
+          }
+        }
+      ]),
+
+      Booking.aggregate([
+        {
+          $facet: {
+            revenue: [{ $group: { _id: null, total: { $sum: '$total_price' }, count: { $sum: 1 } } }],
+            graph: [
+              { $match: { createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+              { $group: { _id: { $dayOfMonth: '$createdAt' }, count: { $sum: 1 }, revenue: { $sum: '$total_price' } } }
+            ]
+          }
+        }
+      ]),
+      UserModel.countDocuments({})
+    ]);
+
+    const flights ={
+        revenue:flightData[0]?.revenue[0]?.total || 0,
+        count: flightData[0]?.revenue[0]?.count || 0,
+        graph: flightData[0]?.graph || []
+    }
+    const hotels = {
+      revenue: hotelData[0]?.revenue[0]?.total || 0,
+      count: hotelData[0]?.revenue[0]?.count || 0,
+      graph: hotelData[0]?.graph || []
+    };
+
+    const tours = {
+      revenue: tourData[0]?.revenue[0]?.total || 0,
+      count: tourData[0]?.revenue[0]?.count || 0,
+      graph: tourData[0]?.graph || []
+    };
+
+    const totalRevenue = flights.revenue + hotels.revenue + tours.revenue;
+    const totalBookings = flights.count + hotels.count + tours.count;
+
+    const dailyGraphMap = {};
+    
+    const mergeToGraphMap = (graphArray) => {
+      graphArray.forEach(item => {
+        const day = item._id;
+        if (!dailyGraphMap[day]) {
+          dailyGraphMap[day] = { day, bookings: 0, revenue: 0 };
+        }
+        dailyGraphMap[day].bookings += item.count;
+        dailyGraphMap[day].revenue += item.revenue;
+      });
+    };
+
+    mergeToGraphMap(flights.graph);
+    mergeToGraphMap(hotels.graph);
+    mergeToGraphMap(tours.graph);
+
+    const monthlyGraphData = Object.values(dailyGraphMap).sort((a, b) => a.day - b.day);
+
+    return res.status(200).json(
+        new ApiResponse(200,"data fetched ",{totalRevenue,totalBookings,userData,department:{flights: flights.revenue,hotels: hotels.revenue,tours: tours.revenue},monthlyGraph: monthlyGraphData},true)
+    )
+});
+
 
 function formatedDate(fdate){
     const p = new Date(fdate);

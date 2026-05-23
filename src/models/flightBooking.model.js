@@ -5,7 +5,6 @@ const flightBookingSchema = new Schema({
     instance_id: { type: Schema.Types.ObjectId, ref: "FlightInstance", required: true },
     pnr_number: { type: String, unique: true },
     
-    // Array of References to Passenger documents
     passengers: [{ type: Schema.Types.ObjectId, ref: "passengers" }],
     
     total_price: Number,

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addFlight, allFlights, cancelFlight, getAllHotels,  getAllHPFBookings, getAllPackages, getAllUsers } from "../controllers/admin.controller.js";
+import { addFlight, allFlights, cancelFlight, getAllAdminDashData, getAllHotels,  getAllHPFBookings, getAllPackages, getAllUsers } from "../controllers/admin.controller.js";
 
 
 const router = new Router();
@@ -21,6 +21,9 @@ router.route('/TourPackage')
 
 router.route('/all')
         .get(getAllHPFBookings)
+
+router.route('/dash')
+        .get(getAllAdminDashData)
 
 
 export default router;

@@ -55,8 +55,6 @@ bookingSchema.index({user_id:1,package_id:1});
 
 
 
-// --- HOOKS ---
-// Auto-calculate total price based on Package Price * Number of Travellers
 bookingSchema.pre('validate', async function() {
   if (this.isNew || this.isModified('travellers')) {
     try {
@@ -71,7 +69,6 @@ bookingSchema.pre('validate', async function() {
   } 
 });
 
-// Reduce package capacity once a booking is Confirmed
 bookingSchema.post('save', async function(doc) {
   if (doc.booking_status === 'Confirmed') {
     await mongoose.model('Package').findByIdAndUpdate(doc.package_id, {
