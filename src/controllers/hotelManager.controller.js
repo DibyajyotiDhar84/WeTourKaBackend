@@ -3,6 +3,7 @@ import ApiError from "../utils/apiError.js";
 import {asyncHandler} from "../utils/asyncHandler.js"
 import { ApiResponse } from "../utils/apiResponse.js";
 import { BookingModel } from '../models/hotelBooking.model.js';
+import mongoose from 'mongoose';
 
 export const addHotel = asyncHandler(async(req,res)=>{
  
@@ -92,4 +93,53 @@ export const deleteHotel = asyncHandler(async(req,res)=>{
   );
  
  
-})
+});
+
+
+export const getAllHotelDashData = asyncHandler(async(req,res)=>{
+  const user_id =req.user.user_id;
+
+    const currentYear = parseInt(req.query.year) || new Date().getFullYear();
+    const currentMonth = parseInt(req.query.month) || (new Date().getMonth() + 1); 
+    const startOfMonth = new Date(Date.UTC(currentYear, currentMonth - 1, 1, 0, 0, 0, 0));
+    const endOfMonth = new Date(Date.UTC(currentYear, currentMonth, 0, 23, 59, 59, 999));
+    const totalDaysInMonth = endOfMonth.getUTCDate();
+
+    const [hotelData] = await  BookingModel.aggregate([
+
+      {
+        $match:{hotelUserId:new mongoose.Types.ObjectId(user_id)}
+      },
+        {
+          $facet: {
+            revenue: [{ $group: { _id: null, total: { $sum: '$totalPrice' }, count: { $sum: 1 } } }],
+            graph: [
+              { $match: { createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+              { $group: { _id: { $dayOfMonth: '$createdAt' }, count: { $sum: 1 }, revenue: { $sum: '$totalPrice' } } }
+            ]
+          }
+        }
+      ]);
+
+    const totalRevenue = hotelData?.revenue?.[0]?.total || 0;
+    const totalBookings = hotelData?.revenue?.[0]?.count || 0;
+    const rawGraphArray = hotelData?.graph || [];
+
+    const dailyGraphMap = {};
+    for (let day = 1; day <= totalDaysInMonth; day++) {
+        dailyGraphMap[day] = { day, bookings: 0, revenue: 0 };
+    }
+    rawGraphArray.forEach(item => {
+        const day = item._id;
+        if (dailyGraphMap[day]) {
+            dailyGraphMap[day].bookings = item.count;
+            dailyGraphMap[day].revenue = item.revenue;
+        }
+    });
+
+    const monthlyGraphData = Object.values(dailyGraphMap).sort((a, b) => a.day - b.day);
+
+    return res.status(200).json(
+        new ApiResponse(200,"Dash data fetched ",{totalBookings,totalRevenue,monthlyGraphData},true)
+    )
+});

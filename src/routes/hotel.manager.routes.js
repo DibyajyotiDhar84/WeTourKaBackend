@@ -1,5 +1,5 @@
 import express from 'express';
-import { addHotel, bookingGuestList, confirmBookingStatus, deleteHotel, getAllHotels, updateHotels } from '../controllers/hotelManager.controller.js';
+import { addHotel, bookingGuestList, confirmBookingStatus, deleteHotel, getAllHotelDashData, getAllHotels, updateHotels } from '../controllers/hotelManager.controller.js';
 
 const router = express.Router();
 
@@ -10,5 +10,8 @@ router.route('/hotel').post(addHotel)
 
 router.route('/guestList').get(bookingGuestList)
                           .patch(confirmBookingStatus)
+
+
+router.route('/dash').get(getAllHotelDashData)
 
 export default router;
