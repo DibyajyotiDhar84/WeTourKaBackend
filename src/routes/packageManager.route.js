@@ -3,6 +3,7 @@ import {
     addPackage, 
     bookingGuestList, 
     deletePackage, 
+    getAllPackageDashData, 
     getAllPManPackages,
     updatePackage
 }
@@ -17,6 +18,8 @@ router.route('/package').get(getAllPManPackages)
 
 
 router.route('/getGuest').get(bookingGuestList)
+
+router.route('/dash').get(getAllPackageDashData)
 
 
 

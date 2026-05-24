@@ -58,4 +58,6 @@ const hotelSchema = new Schema(
     }
 )
 
+hotelSchema.index({location:'text'});
+
 export const hotelModel = model("Hotels",hotelSchema);

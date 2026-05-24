@@ -74,6 +74,7 @@ const packageSchema = new Schema({
 
 
 packageSchema.index({destination:1, start_date:1});
+packageSchema.index({destination:'text'});
 
 packageSchema.pre('save', function() {
   if (this.start_date >= this.end_date) {

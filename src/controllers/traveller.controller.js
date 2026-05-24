@@ -198,7 +198,7 @@ export const cancelBookedFlight = asyncHandler(async(req,res)=>{
 export const bookPackage = asyncHandler(async (req, res) => {
     const user_id=req.user?.user_id;
 
-    const { package_id, travellers } = req.body;
+    const { package_id,PackageUserId, travellers } = req.body;
 
 
     const pkg = await Package.findById(package_id);
@@ -220,7 +220,8 @@ export const bookPackage = asyncHandler(async (req, res) => {
     const newBooking = new Booking({
       user_id: user_id || req.user?.user_id, 
       package_id,
-      travellers: travellerIds, // Array of the newly generated IDs
+      PackageUserId,
+      travellers: travellerIds, 
       booking_status: 'Confirmed' 
     });
 
