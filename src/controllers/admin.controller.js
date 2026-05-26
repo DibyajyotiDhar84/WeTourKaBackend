@@ -26,6 +26,23 @@ export const getAllUsers= asyncHandler(async(req,res)=>{
 
 });
 
+export const updateUserRole = asyncHandler(async(req,res)=>{
+    const {user_id , updatedRole} = req.query;
+
+    const updatedUser = await UserModel.findByIdAndUpdate({_id:user_id},
+                                                          {$set:{role:updatedRole}},
+                                                          {returnDocument:'after'}
+    );
+    if(!updatedUser){
+        throw new ApiError(404, "package not found ");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,"User role updated successfully",updatedUser,true)
+    )
+
+});
+
 
 
 export const addFlight =asyncHandler(async(req,res)=>{
@@ -163,6 +180,8 @@ export const getAllHotels = asyncHandler(async(req,res)=>{
 
 
 export const getAllHPFBookings = asyncHandler(async(req,res)=>{
+    console.log("ei to dhuklo");
+    
  
     const [flightBooking,hotelBooking,packageBooking]= await Promise.all([
         flightBookingModel.find().populate('user_id','name')
@@ -203,9 +222,9 @@ export const getAllHPFBookings = asyncHandler(async(req,res)=>{
         const transformdPackage = packageBooking.map(p=>({
         bookingId:p._id,
         type:'Package',
-        title:p.package_id.destination,
+        title:p.package_id?.destination,
         status:p.booking_status,
-        date:`${formatedDate(p.package_id.start_date)}-->${formatedDate(p.package_id.end_date)}`,
+        date:`${formatedDate(p.package_id?.start_date)}-->${formatedDate(p.package_id?.end_date)}`,
         price:p.total_price,
         username:p.user_id.name
         
@@ -213,11 +232,13 @@ export const getAllHPFBookings = asyncHandler(async(req,res)=>{
 
     }));
 
+
     const allBookings = [
         ...transformdFlight,
         ...transformdHotels,
         ...transformdPackage
     ].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
 
     res.status(200).json(
         new ApiResponse(200,"allBookings fetch successfully",{allBookings},true)

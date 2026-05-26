@@ -13,6 +13,11 @@ const bookingSchema = new Schema({
     ref: 'Package',
     required: true
   },
+  PackageUserId: {
+    type: Schema.Types.ObjectId,
+    ref: 'users',
+    required: true,
+  },
 
   travellers: [{
     type: Schema.Types.ObjectId,
@@ -40,36 +45,36 @@ const bookingSchema = new Schema({
     default: 'Unpaid'
   },
 
- 
+
   special_notes: {
     type: String,
     trim: true
   }
 
-}, { 
- 
-  timestamps: true 
+}, {
+
+  timestamps: true
 });
 
-bookingSchema.index({user_id:1,package_id:1});
+bookingSchema.index({ user_id: 1, package_id: 1 });
 
 
 
-bookingSchema.pre('validate', async function() {
+bookingSchema.pre('validate', async function () {
   if (this.isNew || this.isModified('travellers')) {
     try {
       const pkg = await mongoose.model('Package').findById(this.package_id);
       if (!pkg) throw new Error('Package not found');
-      
+
       this.total_price = pkg.price * this.travellers.length;
-    
+
     } catch (err) {
-      throw new Error({message:e})
+      throw new Error({ message: e })
     }
-  } 
+  }
 });
 
-bookingSchema.post('save', async function(doc) {
+bookingSchema.post('save', async function (doc) {
   if (doc.booking_status === 'Confirmed') {
     await mongoose.model('Package').findByIdAndUpdate(doc.package_id, {
       $inc: { max_capacity: -doc.travellers.length }

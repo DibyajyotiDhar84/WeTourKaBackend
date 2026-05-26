@@ -13,6 +13,7 @@ import { Booking } from "../models/package.booking.model.js";
 import { reviewModel } from "../models/reviewModel.js";
 import { BookingModel } from "../models/hotelBooking.model.js";
 import { hotelModel } from "../models/hotel.model.js";
+import {formatedDate} from '../utils/formatDate.js'
 
 
 
@@ -198,7 +199,7 @@ export const cancelBookedFlight = asyncHandler(async(req,res)=>{
 export const bookPackage = asyncHandler(async (req, res) => {
     const user_id=req.user?.user_id;
 
-    const { package_id, travellers } = req.body;
+    const { package_id,PackageUserId, travellers } = req.body;
 
 
     const pkg = await Package.findById(package_id);
@@ -220,7 +221,8 @@ export const bookPackage = asyncHandler(async (req, res) => {
     const newBooking = new Booking({
       user_id: user_id || req.user?.user_id, 
       package_id,
-      travellers: travellerIds, // Array of the newly generated IDs
+      PackageUserId,
+      travellers: travellerIds, 
       booking_status: 'Confirmed' 
     });
 
@@ -338,47 +340,87 @@ export const cancelBooking = asyncHandler(async(req,res,next)=>{
 
 });
 
-//hotel Review 
-export const AddReview = asyncHandler(async(req,res)=>{
 
-    const { itemId, category, rating, comment } = req.body;
-    const userId = req.user.user_id;
+//myBookings-->>
+export const travellerBookings = asyncHandler(async(req,res)=>{
+    const user_id = req.user.user_id;   
 
-    if (!itemId || !category || !rating || !comment) {
-      throw new ApiError(400,"All feilds are required");
-    }
+     const [hotelBooking,packageBooking]= await Promise.all([   
+    
+            BookingModel.find({userId:user_id}).populate('userId','name')
+                                .populate('hotelId','name _id'),
+    
+            Booking.find({user_id:user_id}).populate('user_id','name')
+                           .populate('package_id','destination start_date end_date _id')
+        ]);
+    
+    
+            const transformdHotels = hotelBooking.map(h=>({
+            bookingId:h._id,
+            itemId:h.hotelId?._id,
+            type:'Hotel',
+            title:h.hotelId?.name,
+            status:h.status,
+            date:`${formatedDate(h.checkInDate)}-->${formatedDate(h.checkOutDate)}`,
+            price:h.totalPrice,
+            username:h.userId.name
+    
+        }));
+    
+            const transformdPackage = packageBooking.map(p=>({
+            bookingId:p._id,
+            itemId:p.package_id._id,
+            type:'Package',
+            title:p.package_id.destination,
+            status:p.booking_status,
+            date:`${formatedDate(p.package_id.start_date)}-->${formatedDate(p.package_id.end_date)}`,
+            price:p.total_price,
+            username:p.user_id.name
+            
+    
+    
+        }));
+    
+        const allBookings = [
+            ...transformdHotels,
+            ...transformdPackage
+        ].sort((a,b)=>new Date(b.date)-new Date(a.date));
 
-    let bookingRecord;
-
-    if(category=='Hotels'){
-        bookingRecord =  await BookingModel.findOne({userId:userId,hotelId:itemId});
-
-    }else if(category=='Package'){
-        bookingRecord= await Booking.findOne({user_id:userId,package_id:itemId});
-    }
-
-    if(!bookingRecord){
-        throw new ApiError(400,`No ${category} booking found for this userId and ${category}Id`);
-    }
-
-     
-
-    const newReview = await reviewModel.create({
-      userId,
-      itemId,
-      category,
-      rating,
-      comment
-    });
-
-    const review = await reviewModel.findOne({_id:newReview._id}).populate('itemId').lean();
-
-    res.status(201).json(
-        new ApiResponse(201,"review added successFully",{review},true)
-    )
+        res.status(200).json(
+            new ApiResponse(200,"fetch bookings",{allBookings},true)
+        )
 
 });
 
+//write reviews---->>>
+export const addReview = asyncHandler(async(req,res)=>{
+    const user_id = req.user.user_id;
+    const { itemId, category, rating, comment } = req.body;
+
+    if (!user_id) {
+      throw new ApiError(401,'Unauthorized. Please log in to leave a review.');
+    }
+
+    if (!itemId || !category || !rating || !comment) {
+       throw new ApiError(400,'provide neccesity fields');
+    }
+
+    const validCategory = category === 'Hotel' ? 'Hotels' : 'Package';
+
+    const newReview = new reviewModel({
+      userId:user_id,
+      itemId,
+      category: validCategory,
+      rating, 
+      comment
+    });
+
+    await newReview.save();
+
+    res.status(201).json(
+        new ApiResponse(201,"Review submitted successfully!",newReview,true)
+    );
+});
 
 export const deleteReview = asyncHandler(async(req,res)=>{
 

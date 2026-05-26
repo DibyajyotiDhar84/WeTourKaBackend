@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { bookFlight, findFlightFromID,cancelBookedFlight,searchFlightPNR, hotelBooking, cancelBooking, AddReview, deleteReview, cancelPackage,bookPackage} from '../controllers/traveller.controller.js';
+import { bookFlight, findFlightFromID,cancelBookedFlight,searchFlightPNR, hotelBooking, cancelBooking,  deleteReview, cancelPackage,bookPackage, travellerBookings, addReview } from '../controllers/traveller.controller.js';
 import { handleChatMessage } from '../controllers/chatbot.controller.js';
 const router = Router();
 
@@ -24,9 +24,11 @@ router.route('/hotel').post(hotelBooking)
                       .patch(cancelBooking)
 
 
-//hotel reviews routes--->>>>
-router.route('/hotel/review').post(AddReview)
-                             .delete(deleteReview)
+                             
+//bookings and reviews-->>
+router.route('/mybookings').get(travellerBookings)
+                           .post(addReview)
+                           .delete(deleteReview)
 
 
 //chatWithBot route-->>>

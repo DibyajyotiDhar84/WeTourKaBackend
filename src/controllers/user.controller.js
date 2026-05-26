@@ -190,6 +190,24 @@ export const searchPackages = asyncHandler(async (req, res) => {
         new ApiResponse(200, "Package Found!", results, true));
   }) ;
 
+
+  export const searchdestination= asyncHandler(async(req,res)=>{
+    const searchWord =req.params.searchWord;
+
+    if(!searchWord){
+        throw new ApiError(400,"provide destination to fetch");
+    }
+    const searchdestination = await Package.find({
+        
+             'destination': { $regex: searchWord, $options: 'i' } 
+        
+    }).select("destination -_id").limit(10);
+
+    res.status(200).json(
+        new ApiResponse(200,"fetch successfully",searchdestination,true)
+    )
+});
+
  //Hotel Controller
   export const getHotelDetails = asyncHandler(async(req,res,next)=>{
     const {id} = req.params;
@@ -204,6 +222,23 @@ export const searchPackages = asyncHandler(async (req, res) => {
         new ApiResponse(200, "Hotel details got", hotel, true)
     );
 })
+
+  export const searchLoc= asyncHandler(async(req,res)=>{
+    const searchWord =req.params.searchWord;
+
+    if(!searchWord){
+        throw new ApiError(400,"provide destination to fetch");
+    }
+    const searchdestination = await hotelModel.find({
+        
+             'location': { $regex: searchWord, $options: 'i' } 
+        
+    }).select("location -_id").limit(10);
+
+    res.status(200).json(
+        new ApiResponse(200,"fetch successfully",searchdestination,true)
+    )
+});
 
 export const getHotelsByLoc = asyncHandler (async(req,res)=>{
     

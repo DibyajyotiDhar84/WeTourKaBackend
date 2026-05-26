@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addFlight, allFlights, cancelFlight, getAllAdminDashData, getAllHotels,  getAllHPFBookings, getAllPackages, getAllUsers } from "../controllers/admin.controller.js";
+import { addFlight, allFlights, cancelFlight, getAllAdminDashData, getAllHotels,  getAllHPFBookings, getAllPackages, getAllUsers, updateUserRole } from "../controllers/admin.controller.js";
 
 
 const router = new Router();
@@ -7,6 +7,7 @@ const router = new Router();
 
 router.route("/users")
         .get(getAllUsers)
+        .patch(updateUserRole)
 
 router.route('/flight')
         .post(addFlight)
