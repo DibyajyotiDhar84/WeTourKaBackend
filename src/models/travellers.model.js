@@ -48,8 +48,6 @@ const travellerSchema = new Schema({
 });
 
 
-// --- HOOKS ---
-// Title Case the name (e.g., "john doe" -> "John Doe")
 travellerSchema.pre('save', function() {
   if (this.isModified('name')) {
     this.name = this.name

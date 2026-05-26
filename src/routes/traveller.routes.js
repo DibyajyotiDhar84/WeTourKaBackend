@@ -10,7 +10,6 @@ router.route('/flights').get(findFlightFromID)
                         .post(bookFlight)
                         .patch(cancelBookedFlight)
 
-
 router.route('/flight/bookingDetails').get(searchFlightPNR)
 
 
