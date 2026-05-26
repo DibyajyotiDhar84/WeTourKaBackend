@@ -6,8 +6,5 @@ const router = express.Router();
 router.route('/getprofile').get(getProfile);
 
 router.route('/logout').post(logout);
-                         
-
-
 
 export default router;

@@ -64,7 +64,7 @@ export const addFlight =asyncHandler(async(req,res)=>{
     }
 
     const seats = [];
-    const rows = Math.ceil(aircraft.capacity / 6); // 6 seats per row (A-F)
+    const rows = Math.ceil(aircraft.capacity / 6); 
     const seatLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
 
     for (let i = 1; i <= rows; i++) {

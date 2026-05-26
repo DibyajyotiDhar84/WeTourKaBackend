@@ -1,6 +1,6 @@
 import {body,checkSchema} from 'express-validator'
 import { ROLES, ROLES_noADMIN } from '../../constants.js';
-// console.log(ROLES_noADMIN);
+
 
 export const validateRegiter=[
 
@@ -89,7 +89,7 @@ export const validateRegisterSchema = checkSchema({
             errorMessage: 'Role is required'
         },
         isIn: {
-            options: [ROLES], // Pass your roles array here
+            options: [ROLES], 
             errorMessage: 'Invalid role'
         }
     },

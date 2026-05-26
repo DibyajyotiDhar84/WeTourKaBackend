@@ -12,7 +12,6 @@ export const addPackage = asyncHandler(async (req, res) => {
     user_id: req.user.user_id
   });
 
-  //const savedPackage = await newPackage.save();
   await newPackage.save();
   const savedPackage = await Package.findOne(Package._id).populate("user_id").lean();
 
