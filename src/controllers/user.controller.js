@@ -1,5 +1,5 @@
 import { validationResult } from "express-validator";
-import { authenticateUser, isEmailExistsInDB, registerUser } from "../services/user.service.js";
+import { isEmailExistsInDB, registerUser } from "../services/user.service.js";
 import ApiError from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { flightModel } from "../models/Flight.model.js";
@@ -8,6 +8,11 @@ import { flightInstanceModel } from "../models/flightInstance.model.js";
 import {Package} from '../models/package.model.js'
 import { hotelModel } from "../models/hotel.model.js";
 import { reviewModel } from "../models/reviewModel.js";
+import { UserModel } from "../models/User.model.js";
+import {generateCsrfToken} from '../app.js'
+
+import jwt from 'jsonwebtoken';
+import util from 'util';
 
 
 //user's auth controller----------->>>>>>>>
@@ -26,18 +31,88 @@ export const register = async (req,res)=>{
 }
 
 
-export const authenticate = async (req,res)=>{
+export const authenticate = asyncHandler(async (req,res)=>{
     const {email,password}=req.body;
-    // console.log(email, password);
-    const user = await authenticateUser(email,password);
-    res.status(user.statusCode).json(user)
-}
+    if(!email||!password){
+        throw new ApiError(400,"provide email and password")
+    }
+    const user = await UserModel.findOne({email:email});
+    if(!user){
+        throw new ApiError(404,"User not Found");
+    }
+
+    if(!await user.isCorrectPassword(password)){
+            throw new ApiError(400,"Invalid Password")
+    }
+
+    const token = await getJWT(user);
+    const options={
+        httpOnly:true,
+        secure:false,
+        sameSite:'lax',
+        maxAge:1000*60*60*12
+    }
+    req.cookies.auth_token = token;
+
+    const rotatedCsrfToken=generateCsrfToken(req, res);
+
+    res.status(200).cookie('auth_token',token,options)
+                    .json(new ApiResponse(200,"login successfully",{ 
+                token, 
+                csrfToken: rotatedCsrfToken,
+                user: { id: user._id, role: user.role } 
+            },true))
+    
+});
 
 export const isEmailExists = async (req, res) => {
     const { email } = req.params;
     const isExists = await isEmailExistsInDB(email);
     res.status(200).json({ isExists });
 }
+
+
+export const logout = asyncHandler(async(req,res)=>{
+    
+
+     const options = {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        path: '/'
+    };
+
+    const xsrfOptions = {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/'
+    };
+
+    return res.status(200)
+        .clearCookie("auth_token", options)
+        .clearCookie("XSRF-TOKEN", xsrfOptions)
+        .json(new ApiResponse(200, "Logged Out Successfully"));
+
+});
+
+
+export const getProfile= asyncHandler(async(req,res)=>{
+
+    const user_id = req.user.user_id;
+    const user = await UserModel.findById({_id:user_id});
+    if(!user){
+        throw new ApiError(404,"user not found");
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,"profile fetched successfully",user,true)
+    )
+
+
+});
+
+
+
 
 // user's flight controllers-------->>>>>>>>
 
@@ -173,3 +248,16 @@ export const getReviewByItemId = asyncHandler(async(req,res)=>{
     )
 
 });
+
+
+
+
+const getJWT = async (user)=>{
+    const signJWT = util.promisify(jwt.sign);
+    const payLoad = {
+        user:{user_id:user._id,email:user.email,role:user.role}
+    }; 
+    
+    const token = await signJWT(payLoad,process.env.SECRECT_KEY,{ expiresIn: 1000*60*60*12});
+    return token;
+ }

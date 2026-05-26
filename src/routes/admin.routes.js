@@ -3,6 +3,8 @@ import { addFlight, allFlights, cancelFlight, getAllAdminDashData, getAllHotels,
 
 
 const router = new Router();
+
+
 router.route("/users")
         .get(getAllUsers)
 

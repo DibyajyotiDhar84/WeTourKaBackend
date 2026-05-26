@@ -4,6 +4,9 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import { ApiResponse } from "../utils/apiResponse.js";
 import { BookingModel } from '../models/hotelBooking.model.js';
 
+
+
+
 export const addHotel = asyncHandler(async(req,res)=>{
  
         const user_id = req.user.user_id;

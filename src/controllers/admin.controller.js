@@ -11,6 +11,9 @@ import { BookingModel } from '../models/hotelBooking.model.js';
 import {Booking} from '../models/package.booking.model.js';
 import { populate } from 'dotenv';
 
+
+
+
 export const getAllUsers= asyncHandler(async(req,res)=>{
 
     const users = await UserModel.find({role:{$ne:"ADMIN"}}).select("-password");

@@ -1,7 +1,9 @@
 import {Router} from 'express';
-import { bookFlight, findFlightFromID,cancelBookedFlight,searchFlightPNR, hotelBooking, cancelBooking, AddReview, deleteReview, cancelPackage,bookPackage } from '../controllers/traveller.controller.js';
+import { bookFlight, findFlightFromID,cancelBookedFlight,searchFlightPNR, hotelBooking, cancelBooking, AddReview, deleteReview, cancelPackage,bookPackage} from '../controllers/traveller.controller.js';
 import { handleChatMessage } from '../controllers/chatbot.controller.js';
 const router = Router();
+
+
 
 //flights routes--->>>
 router.route('/flights').get(findFlightFromID)

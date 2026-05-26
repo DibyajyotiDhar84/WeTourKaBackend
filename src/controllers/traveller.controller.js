@@ -14,7 +14,7 @@ import { reviewModel } from "../models/reviewModel.js";
 import { BookingModel } from "../models/hotelBooking.model.js";
 import { hotelModel } from "../models/hotel.model.js";
 
-//Travellers flights controller--------->>>>>>>>>>>>>>
+
 
 export const findFlightFromID = asyncHandler(async(req,res)=>{
     
@@ -55,7 +55,8 @@ export const bookFlight = asyncHandler(async(req,res)=>{
     
 
     try{
-        const {user_Id, template_Id, date,passengers, total_price}=req.body;
+        const user_Id = req.user.user_id;
+        const {template_Id, date,passengers, total_price}=req.body;
         
         
         const searchDate = new Date(date);        
@@ -210,7 +211,7 @@ export const bookPackage = asyncHandler(async (req, res) => {
 
     if (pkg.max_capacity < travellers.length) {
       //return res.status(400).json({ message: "Not enough slots available" });
-      throw ApiError(400, "Not enough slots available");
+      throw new ApiError(400, "Not enough slots available");
     }
 
     const createdTravellers = await Traveller.insertMany(travellers);
