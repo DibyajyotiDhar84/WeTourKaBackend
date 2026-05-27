@@ -1,7 +1,6 @@
 import express from 'express';
 import { authenticate, getHotelDetails, getHotelsByLoc, getReviewByItemId, isEmailExists, register, searchdestination, searchFlights, searchLoc, searchOrigin } from '../controllers/user.controller.js';
-import {validateRegiter} from '../middlewares/validators/register.validator.mjs';
-import {validate} from '../middlewares/validate.mjs';
+import {validateRegiter} from '../middlewares/validators/register.validator.js';
 import { searchPackages } from '../controllers/user.controller.js';
 
 const router = express.Router();

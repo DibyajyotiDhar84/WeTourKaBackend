@@ -369,11 +369,11 @@ export const travellerBookings = asyncHandler(async(req,res)=>{
     
             const transformdPackage = packageBooking.map(p=>({
             bookingId:p._id,
-            itemId:p.package_id._id,
+            itemId:p.package_id?._id,
             type:'Package',
-            title:p.package_id.destination,
+            title:p.package_id?.destination,
             status:p.booking_status,
-            date:`${formatedDate(p.package_id.start_date)}-->${formatedDate(p.package_id.end_date)}`,
+            date:`${formatedDate(p.package_id?.start_date)}-->${formatedDate(p.package_id?.end_date)}`,
             price:p.total_price,
             username:p.user_id.name
             

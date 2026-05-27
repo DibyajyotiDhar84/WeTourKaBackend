@@ -9,9 +9,8 @@ import hotelManagerRouter from './routes/hotel.manager.routes.js';
 import cookieParser from 'cookie-parser';
 import authmerouter from './routes/authme.route.js'
 import env from 'dotenv'
-import { globalErrorHandler } from './middlewares/errorHandlar.middleware.mjs';
-import {authmiddle, verifyAdmin, verifyHotelManager, verifyPackageManager, verifyTraveller} from './middlewares/checkRole.middleware.js'
-import { getProfile, logout } from './controllers/user.controller.js';
+import { globalErrorHandler } from './middlewares/errorHandlar.middleware.js';
+import {protectedRequestedHandler,verifyRole} from './middlewares/checkRole.middleware.js'
 
 env.config();
 
@@ -55,25 +54,27 @@ app.get('/api/init-session', (req, res) => {
 
 
 
-app.use((req, res, next) => {
+// app.use((req, res, next) => {
 
-    if (req.path.endsWith('/logout')) {
-        return next();
-    }
-    return doubleCsrfProtection(req, res, next);
-});
+//     if (req.path.endsWith('/logout')) {
+//         return next();
+//     }
+//     return doubleCsrfProtection(req, res, next);
+// });
+
+app.use(doubleCsrfProtection);
 
 //routers--->>>>
 app.use("/user",userrouter);
+//protected routes-->>>
+app.use("/admin",protectedRequestedHandler,verifyRole(["ADMIN"]),adminRouter);
 
-app.use("/admin",verifyAdmin,adminRouter);
+app.use("/hotelManager",protectedRequestedHandler,verifyRole(["HOTEL_MANAGER"]), hotelManagerRouter )
 
-app.use("/hotelManager", verifyHotelManager, hotelManagerRouter )
+app.use("/traveller",protectedRequestedHandler,verifyRole(["TRAVELLER"]),travellerRouter);
 
-app.use("/traveller",verifyTraveller,travellerRouter);
-
-app.use("/package",verifyPackageManager, packageManagerRouter);
-app.use("/auth",authmiddle,authmerouter);
+app.use("/package",protectedRequestedHandler,verifyRole(["PACKAGE_MANAGER"]), packageManagerRouter);
+app.use("/auth",protectedRequestedHandler,authmerouter);
 
 
 
